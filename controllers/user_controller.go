@@ -5,21 +5,24 @@ import (
 	"academ_be/models"
 	"academ_be/respones"
 	"context"
+	"log"
 
 	"net/http"
 	"time"
 
+	"firebase.google.com/go/auth"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
-	"go.mongodb.org/mongo-driver/bson"
+	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 var userCollection *mongo.Collection = configs.GetCollection(configs.DB, "User")
+var firebaseClient *auth.Client = configs.ConnectFirebase()
 var validate = validator.New()
 
-func CreateUser() gin.HandlerFunc {
+func SignUpUser() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		var user models.User
@@ -27,78 +30,64 @@ func CreateUser() gin.HandlerFunc {
 
 		//validate the request body
 		if err := c.BindJSON(&user); err != nil {
-			c.JSON(http.StatusBadRequest, respones.UserResponse{Status: http.StatusBadRequest, Message: "error", Data: map[string]interface{}{"data": err.Error()}})
+			response := respones.UserResponse{
+				Status:      http.StatusBadRequest,
+				Message:     "Error",
+				Description: "Email or Password is null",
+				Data:        err.Error(),
+			}
+			c.JSON(http.StatusBadRequest, response)
 			return
 		}
 
 		//use the validator library to validate required fields
 		if validationErr := validate.Struct(&user); validationErr != nil {
-			c.JSON(http.StatusBadRequest, respones.UserResponse{Status: http.StatusBadRequest, Message: "error", Data: map[string]interface{}{"data": validationErr.Error()}})
+			response := respones.UserResponse{
+				Status:      http.StatusBadRequest,
+				Message:     "Error",
+				Description: "Email or Password is null",
+				Data:        validationErr.Error(),
+			}
+			c.JSON(http.StatusBadRequest, response)
 			return
 		}
 
 		newUser := models.User{
 			Id:       primitive.NewObjectID(),
-			Name:     user.Name,
-			Location: user.Location,
-			Title:    user.Title,
+			Email:    user.Email,
+			Password: user.Password,
 		}
 
 		result, err := userCollection.InsertOne(ctx, newUser)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, respones.UserResponse{Status: http.StatusInternalServerError, Message: "error", Data: map[string]interface{}{"data": err.Error()}})
-			return
-		}
-
-		c.JSON(http.StatusCreated, respones.UserResponse{Status: http.StatusCreated, Message: "success", Data: map[string]interface{}{"data": result}})
-	}
-}
-
-func GetAUser() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		userId := c.Param("userId")
-		var user models.User
-		defer cancel()
-
-		docID, err := primitive.ObjectIDFromHex(userId)
-
-		err = userCollection.FindOne(ctx, bson.M{"_id": docID}).Decode(&user)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, respones.UserResponse{Status: http.StatusInternalServerError, Message: "error", Data: map[string]interface{}{"data": err.Error()}})
-			return
-		}
-
-		c.JSON(http.StatusOK, respones.UserResponse{Status: http.StatusOK, Message: "success", Data: map[string]interface{}{"data": user}})
-	}
-}
-
-func GetAllUsers() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		var users []models.User
-		defer cancel()
-
-		results, err := userCollection.Find(ctx, bson.M{})
-
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, respones.UserResponse{Status: http.StatusInternalServerError, Message: "error", Data: map[string]interface{}{"data": err.Error()}})
-			return
-		}
-
-		//reading from the db in an optimal way
-		defer results.Close(ctx)
-		for results.Next(ctx) {
-			var singleUser models.User
-			if err = results.Decode(&singleUser); err != nil {
-				c.JSON(http.StatusInternalServerError, respones.UserResponse{Status: http.StatusInternalServerError, Message: "error", Data: map[string]interface{}{"data": err.Error()}})
+			response := respones.UserResponse{
+				Status:      http.StatusBadRequest,
+				Message:     "Error",
+				Description: "Email or Password is null",
+				Data:        err.Error(),
 			}
-
-			users = append(users, singleUser)
+			c.JSON(http.StatusBadRequest, response)
+			return
 		}
 
-		c.JSON(http.StatusOK,
-			respones.UserResponse{Status: http.StatusOK, Message: "success", Data: map[string]interface{}{"data": users}},
-		)
+		// Generate a UUID for the new user
+		uid := uuid.New().String()
+
+		// Create a custom token for the user using the Firebase Admin SDK
+		customToken, err := firebaseClient.CustomToken(context.Background(), uid)
+		if err != nil {
+			log.Printf("failed to create custom token for user: %v", err)
+		}
+
+		c.SetCookie("token", customToken, 0, "/", "", false, true)
+
+		response := respones.UserResponse{
+			Status:      http.StatusCreated,
+			Message:     "Success",
+			Description: "Create User Sccuess",
+			Data:        result,
+		}
+		c.JSON(http.StatusCreated, response)
+
 	}
 }
