@@ -13,9 +13,10 @@ func main() {
 	//run database
 	configs.ConnectDB()
 	configs.ConnectFirebase()
+	router.Use(configs.CORSMiddleware())
 
 	//routes
 	routes.UserRoute(router)
 
-	router.Run("localhost:6000")
+	router.Run("127.0.0.1:8080")
 }

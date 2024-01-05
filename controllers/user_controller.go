@@ -100,18 +100,6 @@ func SignUpUser() gin.HandlerFunc {
 			return
 		}
 
-		//use the validator library to validate required fields
-		if validationErr := validate.Struct(&user); validationErr != nil {
-			response := respones.UserResponse{
-				Status:      http.StatusBadRequest,
-				Message:     ERROR,
-				Description: INPUT_INVALID,
-				Data:        validationErr.Error(),
-			}
-			c.JSON(http.StatusBadRequest, response)
-			return
-		}
-
 		newUser := models.User{
 			Id:       primitive.NewObjectID(),
 			Email:    user.Email,
