@@ -22,6 +22,39 @@ var userCollection *mongo.Collection = configs.GetCollection(configs.DB, "User")
 var firebaseClient *auth.Client = configs.ConnectFirebase()
 var validate = validator.New()
 
+func Verify() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		return
+	}
+}
+
+func SignInUser() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+
+		// Generate a UUID for the new user
+		uid := uuid.New().String()
+
+		// Create a custom token for the user using the Firebase Admin SDK
+		customToken, err := firebaseClient.CustomToken(ctx, uid)
+		if err != nil {
+			log.Printf("Failed to create custom token for user: %v", err)
+		}
+
+		c.SetCookie(TOKEN, customToken, 0, "/", "", false, true)
+
+		response := respones.UserResponse{
+			Status:      http.StatusOK,
+			Message:     SUCCESS,
+			Description: USER_SIGNIN_SUCCESS,
+			Data:        nil,
+		}
+		c.JSON(http.StatusCreated, response)
+
+	}
+}
+
 func SignUpUser() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -32,8 +65,8 @@ func SignUpUser() gin.HandlerFunc {
 		if err := c.BindJSON(&user); err != nil {
 			response := respones.UserResponse{
 				Status:      http.StatusBadRequest,
-				Message:     "Error",
-				Description: "Email or Password is null",
+				Message:     ERROR,
+				Description: EMAIL_PASSWORD_NULL,
 				Data:        err.Error(),
 			}
 			c.JSON(http.StatusBadRequest, response)
@@ -44,8 +77,8 @@ func SignUpUser() gin.HandlerFunc {
 		if validationErr := validate.Struct(&user); validationErr != nil {
 			response := respones.UserResponse{
 				Status:      http.StatusBadRequest,
-				Message:     "Error",
-				Description: "Email or Password is null",
+				Message:     ERROR,
+				Description: INPUT_INVALID,
 				Data:        validationErr.Error(),
 			}
 			c.JSON(http.StatusBadRequest, response)
@@ -55,15 +88,15 @@ func SignUpUser() gin.HandlerFunc {
 		newUser := models.User{
 			Id:       primitive.NewObjectID(),
 			Email:    user.Email,
-			Password: user.Password,
+			FullName: user.FullName,
 		}
 
 		result, err := userCollection.InsertOne(ctx, newUser)
 		if err != nil {
 			response := respones.UserResponse{
 				Status:      http.StatusBadRequest,
-				Message:     "Error",
-				Description: "Email or Password is null",
+				Message:     ERROR,
+				Description: MONGO_ERROR,
 				Data:        err.Error(),
 			}
 			c.JSON(http.StatusBadRequest, response)
@@ -74,17 +107,17 @@ func SignUpUser() gin.HandlerFunc {
 		uid := uuid.New().String()
 
 		// Create a custom token for the user using the Firebase Admin SDK
-		customToken, err := firebaseClient.CustomToken(context.Background(), uid)
+		customToken, err := firebaseClient.CustomToken(ctx, uid)
 		if err != nil {
 			log.Printf("failed to create custom token for user: %v", err)
 		}
 
-		c.SetCookie("token", customToken, 0, "/", "", false, true)
+		c.SetCookie(TOKEN, customToken, 0, "/", "", false, true)
 
 		response := respones.UserResponse{
 			Status:      http.StatusCreated,
-			Message:     "Success",
-			Description: "Create User Sccuess",
+			Message:     SUCCESS,
+			Description: USER_SIGNUP_SUCCESS,
 			Data:        result,
 		}
 		c.JSON(http.StatusCreated, response)
