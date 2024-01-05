@@ -33,6 +33,33 @@ func SignInUser() gin.HandlerFunc {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
+		// Get ID token from the request header
+		idToken := c.GetHeader(Authorization)
+		if idToken == "" {
+			response := respones.UserResponse{
+				Status:      http.StatusUnauthorized,
+				Message:     ERROR,
+				Description: MISSING_AUTH_HEADER,
+				Data:        nil,
+			}
+			c.JSON(http.StatusUnauthorized, response)
+			return
+		}
+
+		// Verify the ID token
+		_, err := firebaseClient.VerifyIDToken(ctx, idToken)
+		if err != nil {
+			log.Printf("Failed to verify ID token: %v", err)
+			response := respones.UserResponse{
+				Status:      http.StatusUnauthorized,
+				Message:     ERROR,
+				Description: INVALID_TOKEN,
+				Data:        nil,
+			}
+			c.JSON(http.StatusUnauthorized, response)
+			return
+		}
+
 		// Generate a UUID for the new user
 		uid := uuid.New().String()
 
@@ -91,7 +118,7 @@ func SignUpUser() gin.HandlerFunc {
 			FullName: user.FullName,
 		}
 
-		result, err := userCollection.InsertOne(ctx, newUser)
+		_, err := userCollection.InsertOne(ctx, newUser)
 		if err != nil {
 			response := respones.UserResponse{
 				Status:      http.StatusBadRequest,
@@ -103,22 +130,11 @@ func SignUpUser() gin.HandlerFunc {
 			return
 		}
 
-		// Generate a UUID for the new user
-		uid := uuid.New().String()
-
-		// Create a custom token for the user using the Firebase Admin SDK
-		customToken, err := firebaseClient.CustomToken(ctx, uid)
-		if err != nil {
-			log.Printf("failed to create custom token for user: %v", err)
-		}
-
-		c.SetCookie(TOKEN, customToken, 0, "/", "", false, true)
-
 		response := respones.UserResponse{
 			Status:      http.StatusCreated,
 			Message:     SUCCESS,
 			Description: USER_SIGNUP_SUCCESS,
-			Data:        result,
+			Data:        nil,
 		}
 		c.JSON(http.StatusCreated, response)
 
