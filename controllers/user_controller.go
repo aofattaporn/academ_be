@@ -5,7 +5,9 @@ import (
 	"academ_be/models"
 	"academ_be/respones"
 	"context"
+	"fmt"
 	"log"
+	"strings"
 
 	"net/http"
 	"time"
@@ -24,6 +26,20 @@ var validate = validator.New()
 
 func Verify() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		_, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+
+		// Get cookies
+		cookies := c.Request.Cookies()
+		fmt.Println(cookies)
+
+		response := gin.H{
+			"status":      http.StatusOK,
+			"message":     "SUCCESS",
+			"description": "Get token",
+			"data":        nil,
+		}
+		c.JSON(http.StatusOK, response)
 		return
 	}
 }
@@ -47,7 +63,9 @@ func SignInUser() gin.HandlerFunc {
 		}
 
 		// Verify the ID token
-		_, err := firebaseClient.VerifyIDToken(ctx, idToken)
+		tokenString := strings.Replace(idToken, "Bearer ", "", 1)
+
+		_, err := firebaseClient.VerifyIDToken(ctx, tokenString)
 		if err != nil {
 			log.Printf("Failed to verify ID token: %v", err)
 			response := respones.UserResponse{
@@ -69,7 +87,17 @@ func SignInUser() gin.HandlerFunc {
 			log.Printf("Failed to create custom token for user: %v", err)
 		}
 
-		c.SetCookie(TOKEN, customToken, 0, "/", "", false, true)
+		// Set a cookie with SameSite=None and Secure=true
+		cookie := http.Cookie{
+			Name:     "token",
+			Value:    customToken,
+			Path:     "/",
+			MaxAge:   3600,
+			HttpOnly: true,
+			Secure:   true,
+			SameSite: http.SameSiteNoneMode,
+		}
+		http.SetCookie(c.Writer, &cookie)
 
 		response := respones.UserResponse{
 			Status:      http.StatusOK,
