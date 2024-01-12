@@ -2,6 +2,7 @@ package main
 
 import (
 	"academ_be/configs"
+	"academ_be/middlewares"
 	"academ_be/routes"
 
 	"github.com/gin-gonic/gin"
@@ -15,8 +16,14 @@ func main() {
 	configs.ConnectFirebase()
 	router.Use(configs.CORSMiddleware())
 
+	// create auth middleware
+	middleware := router.Group("/")
+
 	//routes
-	routes.UserRoute(router)
+	middleware.Use(middlewares.AuthRequired())
+	{
+		routes.UserRoute(router)
+	}
 
 	router.Run("127.0.0.1:8080")
 }
