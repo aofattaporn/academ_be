@@ -116,7 +116,7 @@ func SignUpUser() gin.HandlerFunc {
 		var user models.User
 		defer cancel()
 
-		//validate the request body
+		// validate the request body
 		if err := c.BindJSON(&user); err != nil {
 			response := respones.UserResponse{
 				Status:      http.StatusBadRequest,
@@ -128,13 +128,42 @@ func SignUpUser() gin.HandlerFunc {
 			return
 		}
 
+		// Get ID token from the request header
+		idToken := c.GetHeader(Authorization)
+		if idToken == "" {
+			response := respones.UserResponse{
+				Status:      http.StatusUnauthorized,
+				Message:     ERROR,
+				Description: MISSING_AUTH_HEADER,
+				Data:        nil,
+			}
+			c.JSON(http.StatusUnauthorized, response)
+			return
+		}
+
+		// Verify token by Firebase admin
+		tokenString := strings.Replace(idToken, "Bearer ", "", 1)
+		credential, err := firebaseClient.VerifyIDToken(ctx, tokenString)
+		if err != nil {
+			log.Printf("Failed to verify ID token: %v", err)
+			response := respones.UserResponse{
+				Status:      http.StatusUnauthorized,
+				Message:     ERROR,
+				Description: INVALID_TOKEN,
+				Data:        nil,
+			}
+			c.JSON(http.StatusUnauthorized, response)
+			return
+		}
+
+		// map newUser on save on database
 		newUser := models.User{
-			Id:       primitive.NewObjectID(),
+			Id:       credential.UID,
 			Email:    user.Email,
 			FullName: user.FullName,
 		}
 
-		_, err := userCollection.InsertOne(ctx, newUser)
+		_, err = userCollection.InsertOne(ctx, newUser)
 		if err != nil {
 			response := respones.UserResponse{
 				Status:      http.StatusBadRequest,
@@ -146,6 +175,7 @@ func SignUpUser() gin.HandlerFunc {
 			return
 		}
 
+		// Map response succss and sending client
 		response := respones.UserResponse{
 			Status:      http.StatusCreated,
 			Message:     SUCCESS,
@@ -153,6 +183,5 @@ func SignUpUser() gin.HandlerFunc {
 			Data:        nil,
 		}
 		c.JSON(http.StatusCreated, response)
-
 	}
 }
