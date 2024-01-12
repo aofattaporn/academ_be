@@ -5,7 +5,6 @@ import (
 	"academ_be/models"
 	"academ_be/respones"
 	"context"
-	"fmt"
 	"log"
 	"strings"
 
@@ -15,34 +14,13 @@ import (
 	"firebase.google.com/go/auth"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
-	"github.com/google/uuid"
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 var userCollection *mongo.Collection = configs.GetCollection(configs.DB, "User")
 var firebaseClient *auth.Client = configs.ConnectFirebase()
 var validate = validator.New()
-
-func Verify() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		_, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		defer cancel()
-
-		// Get cookies
-		cookies := c.Request.Cookies()
-		fmt.Println(cookies)
-
-		response := gin.H{
-			"status":      http.StatusOK,
-			"message":     "SUCCESS",
-			"description": "Get token",
-			"data":        nil,
-		}
-		c.JSON(http.StatusOK, response)
-		return
-	}
-}
 
 func SignInUser() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -65,7 +43,7 @@ func SignInUser() gin.HandlerFunc {
 		// Verify the ID token
 		tokenString := strings.Replace(idToken, "Bearer ", "", 1)
 
-		_, err := firebaseClient.VerifyIDToken(ctx, tokenString)
+		credential, err := firebaseClient.VerifyIDToken(ctx, tokenString)
 		if err != nil {
 			log.Printf("Failed to verify ID token: %v", err)
 			response := respones.UserResponse{
@@ -78,32 +56,26 @@ func SignInUser() gin.HandlerFunc {
 			return
 		}
 
-		// Generate a UUID for the new user
-		uid := uuid.New().String()
-
-		// Create a custom token for the user using the Firebase Admin SDK
-		customToken, err := firebaseClient.CustomToken(ctx, uid)
+		// Retrieves the first matching document
+		var result models.UserResponse
+		err = userCollection.FindOne(ctx, bson.M{"_id": credential.UID}).Decode(&result)
 		if err != nil {
-			log.Printf("Failed to create custom token for user: %v", err)
+			log.Printf("Failed to verify ID token: %v", err)
+			response := respones.UserResponse{
+				Status:      http.StatusUnauthorized,
+				Message:     ERROR,
+				Description: "error firebase find one",
+				Data:        nil,
+			}
+			c.JSON(http.StatusUnauthorized, response)
+			return
 		}
-
-		// Set a cookie with SameSite=None and Secure=true
-		cookie := http.Cookie{
-			Name:     "token",
-			Value:    customToken,
-			Path:     "/",
-			MaxAge:   3600,
-			HttpOnly: true,
-			Secure:   true,
-			SameSite: http.SameSiteNoneMode,
-		}
-		http.SetCookie(c.Writer, &cookie)
 
 		response := respones.UserResponse{
 			Status:      http.StatusOK,
 			Message:     SUCCESS,
 			Description: USER_SIGNIN_SUCCESS,
-			Data:        nil,
+			Data:        result,
 		}
 		c.JSON(http.StatusCreated, response)
 
