@@ -3,7 +3,6 @@ package middlewares
 import (
 	"academ_be/configs"
 	"academ_be/respones"
-	"context"
 	"log"
 	"net/http"
 	"strings"
@@ -14,8 +13,9 @@ import (
 
 var firebaseClient *auth.Client = configs.ConnectFirebase()
 
-func AuthRequired() gin.HandlerFunc {
+func AuthRequire() gin.HandlerFunc {
 	return func(c *gin.Context) {
+
 		// Get ID token from the request header
 		idToken := c.GetHeader("Authorization")
 		if idToken == "" {
@@ -26,13 +26,13 @@ func AuthRequired() gin.HandlerFunc {
 				Data:        nil,
 			}
 			c.JSON(http.StatusUnauthorized, response)
-			c.Abort()
 			return
 		}
 
-		// Verify token by Firebase admin
+		// Verify the ID token
 		tokenString := strings.Replace(idToken, "Bearer ", "", 1)
-		credential, err := firebaseClient.VerifyIDToken(context.Background(), tokenString)
+
+		credential, err := firebaseClient.VerifyIDToken(c, tokenString)
 		if err != nil {
 			log.Printf("Failed to verify ID token: %v", err)
 			response := respones.UserResponse{
@@ -42,13 +42,11 @@ func AuthRequired() gin.HandlerFunc {
 				Data:        nil,
 			}
 			c.JSON(http.StatusUnauthorized, response)
-			c.Abort()
 			return
 		}
 
-		// Set the user ID from the token in the context for further use
+		// Set example variable
 		c.Set("userID", credential.UID)
-
 		c.Next()
 	}
 }

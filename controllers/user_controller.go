@@ -6,7 +6,6 @@ import (
 	"academ_be/respones"
 	"context"
 	"log"
-	"strings"
 
 	"net/http"
 	"time"
@@ -27,38 +26,11 @@ func SignInUser() gin.HandlerFunc {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
-		// Get ID token from the request header
-		idToken := c.GetHeader(Authorization)
-		if idToken == "" {
-			response := respones.UserResponse{
-				Status:      http.StatusUnauthorized,
-				Message:     ERROR,
-				Description: MISSING_AUTH_HEADER,
-				Data:        nil,
-			}
-			c.JSON(http.StatusUnauthorized, response)
-			return
-		}
-
-		// Verify the ID token
-		tokenString := strings.Replace(idToken, "Bearer ", "", 1)
-
-		credential, err := firebaseClient.VerifyIDToken(ctx, tokenString)
-		if err != nil {
-			log.Printf("Failed to verify ID token: %v", err)
-			response := respones.UserResponse{
-				Status:      http.StatusUnauthorized,
-				Message:     ERROR,
-				Description: INVALID_TOKEN,
-				Data:        nil,
-			}
-			c.JSON(http.StatusUnauthorized, response)
-			return
-		}
-
 		// Retrieves the first matching document
+		userID := c.MustGet("userID").(string)
+
 		var result models.UserResponse
-		err = userCollection.FindOne(ctx, bson.M{"_id": credential.UID}).Decode(&result)
+		err := userCollection.FindOne(ctx, bson.M{"_id": userID}).Decode(&result)
 		if err != nil {
 			log.Printf("Failed to verify ID token: %v", err)
 			response := respones.UserResponse{
@@ -99,43 +71,17 @@ func SignUpUser() gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, response)
 			return
 		}
-
-		// Get ID token from the request header
-		idToken := c.GetHeader(Authorization)
-		if idToken == "" {
-			response := respones.UserResponse{
-				Status:      http.StatusUnauthorized,
-				Message:     ERROR,
-				Description: MISSING_AUTH_HEADER,
-				Data:        nil,
-			}
-			c.JSON(http.StatusUnauthorized, response)
-			return
-		}
-
-		// Verify token by Firebase admin
-		tokenString := strings.Replace(idToken, "Bearer ", "", 1)
-		credential, err := firebaseClient.VerifyIDToken(ctx, tokenString)
-		if err != nil {
-			log.Printf("Failed to verify ID token: %v", err)
-			response := respones.UserResponse{
-				Status:      http.StatusUnauthorized,
-				Message:     ERROR,
-				Description: INVALID_TOKEN,
-				Data:        nil,
-			}
-			c.JSON(http.StatusUnauthorized, response)
-			return
-		}
+		// Retrieves the first matching document
+		userID := c.MustGet("userID").(string)
 
 		// map newUser on save on database
 		newUser := models.User{
-			Id:       credential.UID,
+			Id:       userID,
 			Email:    user.Email,
 			FullName: user.FullName,
 		}
 
-		_, err = userCollection.InsertOne(ctx, newUser)
+		_, err := userCollection.InsertOne(ctx, newUser)
 		if err != nil {
 			response := respones.UserResponse{
 				Status:      http.StatusBadRequest,
