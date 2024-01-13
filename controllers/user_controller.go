@@ -21,6 +21,103 @@ var userCollection *mongo.Collection = configs.GetCollection(configs.DB, "User")
 var firebaseClient *auth.Client = configs.ConnectFirebase()
 var validate = validator.New()
 
+func SignInWithGoogle() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		ctx, cancel := context.WithTimeout(c, 10*time.Second)
+		defer cancel()
+
+		// get user data and finding on db
+		userID := c.MustGet("userID").(string)
+
+		count, err := userCollection.CountDocuments(ctx, bson.M{"_id": userID})
+		if err != nil {
+			log.Printf("Failed to Count Document: %v", err)
+			response := respones.UserResponse{
+				Status:      http.StatusBadRequest,
+				Message:     ERROR,
+				Description: "error firebase count documents",
+				Data:        nil,
+			}
+			c.JSON(http.StatusUnauthorized, response)
+			return
+		}
+
+		// checking user count on db
+		if count > 0 {
+
+			// find a user on db and mapping response success
+			var result models.UserResponse
+			err := userCollection.FindOne(ctx, bson.M{"_id": userID}).Decode(&result)
+			if err != nil {
+				log.Printf("Failed to Find One:%v", err)
+				response := respones.UserResponse{
+					Status:      http.StatusUnauthorized,
+					Message:     ERROR,
+					Description: "error firebase find one",
+					Data:        nil,
+				}
+				c.JSON(http.StatusUnauthorized, response)
+				return
+			}
+
+			response := respones.UserResponse{
+				Status:      http.StatusOK,
+				Message:     SUCCESS,
+				Description: USER_SIGNIN_SUCCESS,
+				Data:        result,
+			}
+			c.JSON(http.StatusCreated, response)
+
+		} else {
+
+			// map user and create newUser account on db
+			var user models.User
+			if err := c.BindJSON(&user); err != nil {
+				response := respones.UserResponse{
+					Status:      http.StatusBadRequest,
+					Message:     ERROR,
+					Description: EMAIL_PASSWORD_NULL,
+					Data:        err.Error(),
+				}
+				c.JSON(http.StatusBadRequest, response)
+				return
+			}
+
+			newUser := models.User{
+				Id:       userID,
+				Email:    user.Email,
+				FullName: user.Email,
+			}
+
+			_, err := userCollection.InsertOne(ctx, newUser)
+			if err != nil {
+				response := respones.UserResponse{
+					Status:      http.StatusBadRequest,
+					Message:     ERROR,
+					Description: MONGO_ERROR,
+					Data:        err.Error(),
+				}
+				c.JSON(http.StatusBadRequest, response)
+				return
+			}
+
+			newUserResponse := models.UserResponse{
+				Email:    user.Email,
+				FullName: user.Email,
+			}
+
+			response := respones.UserResponse{
+				Status:      http.StatusCreated,
+				Message:     SUCCESS,
+				Description: USER_SIGNUP_SUCCESS,
+				Data:        newUserResponse,
+			}
+
+			c.JSON(http.StatusCreated, response)
+		}
+	}
+}
+
 func SignInUser() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx, cancel := context.WithTimeout(c, 10*time.Second)
