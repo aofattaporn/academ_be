@@ -23,7 +23,7 @@ var validate = validator.New()
 
 func SignInUser() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		ctx, cancel := context.WithTimeout(c, 10*time.Second)
 		defer cancel()
 
 		// Retrieves the first matching document
@@ -57,10 +57,10 @@ func SignInUser() gin.HandlerFunc {
 func SignUpUser() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		var user models.User
 		defer cancel()
 
 		// validate the request body
+		var user models.User
 		if err := c.BindJSON(&user); err != nil {
 			response := respones.UserResponse{
 				Status:      http.StatusBadRequest,
