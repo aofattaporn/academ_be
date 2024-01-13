@@ -18,7 +18,7 @@ func main() {
 	configs.ConnectDB()
 	configs.ConnectFirebase()
 
-	router.Use(configs.CORSMiddleware())
+	router.Use(middlewares.CORSMiddleware())
 	router.Use(middlewares.AuthRequire())
 
 	//routes
