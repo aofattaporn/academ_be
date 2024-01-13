@@ -18,8 +18,10 @@ func main() {
 	configs.ConnectDB()
 	configs.ConnectFirebase()
 
+	// middlerwares
 	router.Use(middlewares.CORSMiddleware())
 	router.Use(middlewares.AuthRequire())
+	router.Use(middlewares.ErrorHandler())
 
 	//routes
 	routes.UserRoute(router)
