@@ -36,7 +36,6 @@ func SignInWithGoogle() gin.HandlerFunc {
 				Status:      http.StatusBadRequest,
 				Message:     ERROR,
 				Description: "error firebase count documents",
-				Data:        nil,
 			}
 			c.JSON(http.StatusUnauthorized, response)
 			return
@@ -44,27 +43,10 @@ func SignInWithGoogle() gin.HandlerFunc {
 
 		// checking user count on db
 		if count > 0 {
-
-			// find a user on db and mapping response success
-			var result models.UserResponse
-			err := userCollection.FindOne(ctx, bson.M{"_id": userID}).Decode(&result)
-			if err != nil {
-				log.Printf("Failed to Find One:%v", err)
-				response := respones.UserResponse{
-					Status:      http.StatusUnauthorized,
-					Message:     ERROR,
-					Description: "error firebase find one",
-					Data:        nil,
-				}
-				c.JSON(http.StatusUnauthorized, response)
-				return
-			}
-
 			response := respones.UserResponse{
 				Status:      http.StatusOK,
 				Message:     SUCCESS,
 				Description: USER_SIGNIN_SUCCESS,
-				Data:        result,
 			}
 			c.JSON(http.StatusCreated, response)
 
@@ -101,18 +83,11 @@ func SignInWithGoogle() gin.HandlerFunc {
 				return
 			}
 
-			newUserResponse := models.UserResponse{
-				Email:    user.Email,
-				FullName: user.Email,
-			}
-
 			response := respones.UserResponse{
 				Status:      http.StatusCreated,
 				Message:     SUCCESS,
 				Description: USER_SIGNUP_SUCCESS,
-				Data:        newUserResponse,
 			}
-
 			c.JSON(http.StatusCreated, response)
 		}
 	}
@@ -120,7 +95,7 @@ func SignInWithGoogle() gin.HandlerFunc {
 
 func SignInUser() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		ctx, cancel := context.WithTimeout(c, 10*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
 		// Retrieves the first matching document
@@ -144,7 +119,6 @@ func SignInUser() gin.HandlerFunc {
 			Status:      http.StatusOK,
 			Message:     SUCCESS,
 			Description: USER_SIGNIN_SUCCESS,
-			Data:        result,
 		}
 		c.JSON(http.StatusCreated, response)
 
@@ -168,10 +142,9 @@ func SignUpUser() gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, response)
 			return
 		}
-		// Retrieves the first matching document
-		userID := c.MustGet("userID").(string)
 
 		// map newUser on save on database
+		userID := c.MustGet("userID").(string)
 		newUser := models.User{
 			Id:       userID,
 			Email:    user.Email,
