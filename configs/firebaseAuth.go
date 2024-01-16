@@ -13,7 +13,7 @@ import (
 func ConnectFirebase() *auth.Client {
 
 	// Connect to Firebase
-	opt := option.WithCredentialsFile("./academprojex-firebase-adminsdk-yew3p-4a85b7993d.json")
+	opt := option.WithCredentialsFile("./academprojex-firebase-adminsdk.json")
 	app, err := firebase.NewApp(context.Background(), nil, opt)
 	if err != nil {
 		fmt.Errorf("error initializing app: %v", err)
