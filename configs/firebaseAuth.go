@@ -27,5 +27,3 @@ func ConnectFirebase() *auth.Client {
 
 	return authClient
 }
-
-var Firebase *auth.Client = ConnectFirebase()

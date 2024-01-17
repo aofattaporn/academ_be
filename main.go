@@ -14,17 +14,21 @@ var firebaseClient *auth.Client = configs.ConnectFirebase()
 func main() {
 	router := gin.Default()
 
-	//run database
+	// Run database
 	configs.ConnectDB()
-	configs.ConnectFirebase()
+	// admin := configs.ConnectFirebase()
 
-	// middlerwares
+	// Middlewares
 	router.Use(middlewares.CORSMiddleware())
-	router.Use(middlewares.AuthRequire())
+	// router.Use(middlewares.AuthRequire(admin))
 	router.Use(middlewares.ErrorHandler())
 
-	//routes
-	routes.UserRoute(router)
+	// Routes
+	initRoute(router)
 
 	router.Run("127.0.0.1:8080")
+}
+
+func initRoute(router *gin.Engine) {
+	routes.UserRoute(router)
 }

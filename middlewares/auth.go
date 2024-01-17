@@ -1,7 +1,6 @@
 package middlewares
 
 import (
-	"academ_be/configs"
 	"academ_be/respones"
 	"log"
 	"net/http"
@@ -11,9 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var firebaseClient *auth.Client = configs.ConnectFirebase()
-
-func AuthRequire() gin.HandlerFunc {
+func AuthRequire(admin *auth.Client) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
 		// Get ID token from the request header
@@ -25,14 +22,14 @@ func AuthRequire() gin.HandlerFunc {
 				Description: "MISSING_AUTH_HEADER",
 				Data:        nil,
 			}
-			c.JSON(http.StatusUnauthorized, response)
+			c.AbortWithStatusJSON(http.StatusUnauthorized, response)
 			return
 		}
 
 		// Verify the ID token
 		tokenString := strings.Replace(idToken, "Bearer ", "", 1)
 
-		credential, err := firebaseClient.VerifyIDToken(c, tokenString)
+		credential, err := admin.VerifyIDToken(c, tokenString)
 		if err != nil {
 			log.Printf("Failed to verify ID token: %v", err)
 			response := respones.UserResponse{
@@ -41,7 +38,7 @@ func AuthRequire() gin.HandlerFunc {
 				Description: "INVALID_TOKEN",
 				Data:        nil,
 			}
-			c.JSON(http.StatusUnauthorized, response)
+			c.AbortWithStatusJSON(http.StatusUnauthorized, response)
 			return
 		}
 
