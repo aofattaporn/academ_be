@@ -14,7 +14,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// MockUserService is a mock implementation of the UserService interface for testing.
 type MockUserService struct {
 	CreateUserFunc func(user *models.User) error
 }
@@ -24,39 +23,27 @@ func (m *MockUserService) CreateUser(user *models.User) error {
 }
 
 func TestCreateResource(t *testing.T) {
-	// Create a test router with the handler
 	r := gin.Default()
-	r.POST("/api/resource", handlers.CreateResource) // Use the original package name
+	r.POST("/api/resource", handlers.CreateResource)
 
-	// Prepare a sample user for the test
-	user := models.User{
-		// populate fields as needed
-	}
+	user := models.User{}
 
-	// Prepare request body
 	reqBody, err := json.Marshal(user)
 	assert.NoError(t, err)
 
-	// Set up the request
 	req, err := http.NewRequest("POST", "/api/resource", bytes.NewBuffer(reqBody))
 	assert.NoError(t, err)
 	req.Header.Set("Content-Type", "application/json")
 
-	// Create a mock UserService for testing
 	mockUserService := &MockUserService{
 		CreateUserFunc: func(user *models.User) error {
-			// Mock implementation for CreateUser function, e.g., return nil for success
 			return nil
 		},
 	}
 
-	// Set the mock UserService for testing
-	handlers.SetUserService(mockUserService) // Use the alias 'handlers'
-
-	// Perform the request
+	handlers.SetUserService(mockUserService)
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 
-	// Verify the response
 	assert.Equal(t, http.StatusCreated, w.Code)
 }
