@@ -1,5 +1,12 @@
 package services
 
+import (
+	"academ_be/respones"
+	"log"
+
+	"github.com/gin-gonic/gin"
+)
+
 const (
 
 	// Response Status constant
@@ -19,3 +26,13 @@ const (
 	// validation constant
 	TOKEN string = "token"
 )
+
+func handleError(c *gin.Context, err error, statusCode int, message string) {
+	log.Printf("Error: %v", err)
+	response := respones.CustomResponse{
+		Status:      statusCode,
+		Message:     message,
+		Description: err.Error(),
+	}
+	c.AbortWithStatusJSON(statusCode, response)
+}

@@ -7,5 +7,7 @@ import (
 )
 
 func UserRoute(router *gin.Engine) {
-	router.POST("/api/resource", handlers.CreateResource)
+	router.POST("/api/v1/sign-up", handlers.CreateUser)
+	router.POST("/api/v1/sign-in", handlers.GetUser)
+	router.POST("/api/v1/sign-in/google", handlers.CreateUserByGoogle)
 }

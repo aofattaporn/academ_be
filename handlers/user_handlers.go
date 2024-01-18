@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"academ_be/models"
-	"academ_be/respones"
 	"academ_be/services"
 	"net/http"
 
@@ -11,20 +10,12 @@ import (
 
 func CreateUser(c *gin.Context) {
 
-	// validate the request body
 	var user models.User
 	if err := c.BindJSON(&user); err != nil {
-		response := respones.CustomResponse{
-			Status:      http.StatusBadRequest,
-			Message:     ERROR,
-			Description: EMAIL_PASSWORD_NULL,
-			Data:        err.Error(),
-		}
-		c.AbortWithStatusJSON(http.StatusBadRequest, response)
+		handleBadRequest(c, ERROR, err.Error())
 		return
 	}
 
-	// map newUser on save on database
 	userID := c.MustGet("userID").(string)
 	newUser := models.User{
 		Id:       userID,
@@ -33,15 +24,40 @@ func CreateUser(c *gin.Context) {
 	}
 	services.CreateUser(c, &newUser)
 
-	// Map response succss and sending client
-	response := respones.CustomResponse{
-		Status:      http.StatusCreated,
-		Message:     SUCCESS,
-		Description: USER_SIGNUP_SUCCESS,
-	}
-	c.JSON(http.StatusCreated, response)
+	handleSuccess(c, http.StatusCreated, SUCCESS, USER_SIGNUP_SUCCESS)
 }
 
-func GetUser(c *gin.Context) {}
+func GetUser(c *gin.Context) {
 
-func CreateUserByGoogle(c *gin.Context) {}
+	userID := c.MustGet("userID").(string)
+	services.FindUserOneById(c, userID)
+
+	handleSuccess(c, http.StatusCreated, SUCCESS, USER_SIGNUP_SUCCESS)
+}
+
+func CreateUserByGoogle(c *gin.Context) {
+
+	userID := c.MustGet("userID").(string)
+	count := services.FindUserAndCount(c, userID)
+
+	if count < 0 {
+
+		var user models.User
+		if err := c.BindJSON(&user); err != nil {
+			handleBadRequest(c, ERROR, err.Error())
+			return
+		}
+
+		newUser := models.User{
+			Id:       userID,
+			Email:    user.Email,
+			FullName: user.FullName,
+		}
+		services.CreateUser(c, &newUser)
+
+		handleSuccess(c, http.StatusCreated, SUCCESS, USER_SIGNUP_SUCCESS)
+
+	} else {
+		handleSuccess(c, http.StatusCreated, SUCCESS, USER_SIGNUP_SUCCESS)
+	}
+}

@@ -15,9 +15,7 @@ func EnvMongoURI() string {
 		fmt.Println(err)
 	}
 
-	// return os.Getenv("MONGOURI")
-	return "mongodb://root:example@localhost:27017/"
-
+	return os.Getenv("MONGOURI")
 }
 
 func EnvMongoDatabase() string {
@@ -27,5 +25,4 @@ func EnvMongoDatabase() string {
 	}
 
 	return os.Getenv("MONGODATABASE")
-
 }

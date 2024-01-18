@@ -1,5 +1,12 @@
 package handlers
 
+import (
+	"academ_be/respones"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
 const (
 
 	// Response Status constant
@@ -19,3 +26,22 @@ const (
 	// validation constant
 	TOKEN string = "token"
 )
+
+func handleBadRequest(c *gin.Context, message, description string) {
+	response := respones.CustomResponse{
+		Status:      http.StatusBadRequest,
+		Message:     ERROR,
+		Description: message,
+		Data:        description,
+	}
+	c.AbortWithStatusJSON(http.StatusBadRequest, response)
+}
+
+func handleSuccess(c *gin.Context, statusCode int, message, description string) {
+	response := respones.CustomResponse{
+		Status:      statusCode,
+		Message:     message,
+		Description: description,
+	}
+	c.JSON(statusCode, response)
+}
