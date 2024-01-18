@@ -2,7 +2,6 @@ package configs
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	firebase "firebase.google.com/go"
@@ -13,10 +12,10 @@ import (
 func ConnectFirebase() *auth.Client {
 
 	// Connect to Firebase
-	opt := option.WithCredentialsFile("./academprojex-firebase-adminsdk-yew3p-4a85b7993d.json")
+	opt := option.WithCredentialsFile("./academprojex-firebase-adminsdk.json")
 	app, err := firebase.NewApp(context.Background(), nil, opt)
 	if err != nil {
-		fmt.Errorf("error initializing app: %v", err)
+		log.Fatalf("error initializing app: %v", err)
 	}
 
 	// Initialize Firebase Auth client
@@ -27,5 +26,3 @@ func ConnectFirebase() *auth.Client {
 
 	return authClient
 }
-
-var Firebase *auth.Client = ConnectFirebase()

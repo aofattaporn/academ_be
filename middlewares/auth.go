@@ -1,9 +1,7 @@
 package middlewares
 
 import (
-	"academ_be/configs"
 	"academ_be/respones"
-	"context"
 	"log"
 	"net/http"
 	"strings"
@@ -12,43 +10,48 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var firebaseClient *auth.Client = configs.ConnectFirebase()
+const (
+	AUTHORIZATION       string = "Authorization"
+	ERROR               string = "ERROR"
+	MISSING_AUTH_HEADER string = "MISSING_AUTH_HEADER"
+	INVALID_TOKEN       string = "INVALID_TOKEN"
+	BEARER              string = "Bearer "
+	EMPTY_STRING        string = ""
+)
 
-func AuthRequired() gin.HandlerFunc {
+func AuthRequire(admin *auth.Client) gin.HandlerFunc {
 	return func(c *gin.Context) {
+
 		// Get ID token from the request header
-		idToken := c.GetHeader("Authorization")
+		idToken := c.GetHeader(AUTHORIZATION)
 		if idToken == "" {
-			response := respones.UserResponse{
+			response := respones.CustomResponse{
 				Status:      http.StatusUnauthorized,
-				Message:     "ERROR",
-				Description: "MISSING_AUTH_HEADER",
+				Message:     ERROR,
+				Description: MISSING_AUTH_HEADER,
 				Data:        nil,
 			}
-			c.JSON(http.StatusUnauthorized, response)
-			c.Abort()
+			c.AbortWithStatusJSON(http.StatusUnauthorized, response)
 			return
 		}
 
-		// Verify token by Firebase admin
-		tokenString := strings.Replace(idToken, "Bearer ", "", 1)
-		credential, err := firebaseClient.VerifyIDToken(context.Background(), tokenString)
+		// Verify the ID token
+		tokenString := strings.Replace(idToken, BEARER, EMPTY_STRING, 1)
+		credential, err := admin.VerifyIDToken(c, tokenString)
 		if err != nil {
 			log.Printf("Failed to verify ID token: %v", err)
-			response := respones.UserResponse{
+			response := respones.CustomResponse{
 				Status:      http.StatusUnauthorized,
-				Message:     "ERROR",
-				Description: "INVALID_TOKEN",
+				Message:     ERROR,
+				Description: INVALID_TOKEN,
 				Data:        nil,
 			}
-			c.JSON(http.StatusUnauthorized, response)
-			c.Abort()
+			c.AbortWithStatusJSON(http.StatusUnauthorized, response)
 			return
 		}
 
-		// Set the user ID from the token in the context for further use
+		// Set example variable
 		c.Set("userID", credential.UID)
-
 		c.Next()
 	}
 }

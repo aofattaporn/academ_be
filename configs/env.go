@@ -1,7 +1,7 @@
 package configs
 
 import (
-	"log"
+	"fmt"
 	"os"
 
 	"github.com/joho/godotenv"
@@ -9,8 +9,10 @@ import (
 
 func EnvMongoURI() string {
 	err := godotenv.Load()
+	fmt.Println(err)
+
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		fmt.Println(err)
 	}
 
 	return os.Getenv("MONGOURI")
@@ -19,7 +21,7 @@ func EnvMongoURI() string {
 func EnvMongoDatabase() string {
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		fmt.Println(err)
 	}
 
 	return os.Getenv("MONGODATABASE")

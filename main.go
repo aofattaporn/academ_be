@@ -2,20 +2,28 @@ package main
 
 import (
 	"academ_be/configs"
+	"academ_be/middlewares"
 	"academ_be/routes"
 
+	"firebase.google.com/go/auth"
 	"github.com/gin-gonic/gin"
 )
+
+var firebaseClient *auth.Client = configs.ConnectFirebase()
 
 func main() {
 	router := gin.Default()
 
-	//run database
+	// Run database
 	configs.ConnectDB()
-	configs.ConnectFirebase()
-	router.Use(configs.CORSMiddleware())
+	admin := configs.ConnectFirebase()
 
-	//routes
+	// Middlewares
+	router.Use(middlewares.CORSMiddleware())
+	router.Use(middlewares.AuthRequire(admin))
+	router.Use(middlewares.ErrorHandler())
+
+	// Routes
 	routes.UserRoute(router)
 
 	router.Run("127.0.0.1:8080")

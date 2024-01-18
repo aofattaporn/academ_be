@@ -1,12 +1,13 @@
 package routes
 
 import (
-	"academ_be/controllers"
+	"academ_be/handlers"
 
 	"github.com/gin-gonic/gin"
 )
 
 func UserRoute(router *gin.Engine) {
-	router.POST("/api/v1/sign-up", controllers.SignUpUser())
-	router.POST("/api/v1/sign-in", controllers.SignInUser())
+	router.POST("/api/v1/sign-up", handlers.CreateUser)
+	router.POST("/api/v1/sign-in", handlers.GetUser)
+	router.POST("/api/v1/sign-in/google", handlers.CreateUserByGoogle)
 }
