@@ -1,6 +1,6 @@
 package respones
 
-type UserResponse struct {
+type CustomResponse struct {
 	Status      int         `json:"status"`
 	Message     string      `json:"message"`
 	Description string      `json:"description"`

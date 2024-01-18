@@ -32,7 +32,7 @@ func SignInWithGoogle() gin.HandlerFunc {
 		count, err := userCollection.CountDocuments(ctx, bson.M{"_id": userID})
 		if err != nil {
 			log.Printf("Failed to Count Document: %v", err)
-			response := respones.UserResponse{
+			response := respones.CustomResponse{
 				Status:      http.StatusBadRequest,
 				Message:     ERROR,
 				Description: "error firebase count documents",
@@ -43,7 +43,7 @@ func SignInWithGoogle() gin.HandlerFunc {
 
 		// checking user count on db
 		if count > 0 {
-			response := respones.UserResponse{
+			response := respones.CustomResponse{
 				Status:      http.StatusOK,
 				Message:     SUCCESS,
 				Description: USER_SIGNIN_SUCCESS,
@@ -55,7 +55,7 @@ func SignInWithGoogle() gin.HandlerFunc {
 			// map user and create newUser account on db
 			var user models.User
 			if err := c.BindJSON(&user); err != nil {
-				response := respones.UserResponse{
+				response := respones.CustomResponse{
 					Status:      http.StatusBadRequest,
 					Message:     ERROR,
 					Description: EMAIL_PASSWORD_NULL,
@@ -73,7 +73,7 @@ func SignInWithGoogle() gin.HandlerFunc {
 
 			_, err := userCollection.InsertOne(ctx, newUser)
 			if err != nil {
-				response := respones.UserResponse{
+				response := respones.CustomResponse{
 					Status:      http.StatusBadRequest,
 					Message:     ERROR,
 					Description: MONGO_ERROR,
@@ -83,7 +83,7 @@ func SignInWithGoogle() gin.HandlerFunc {
 				return
 			}
 
-			response := respones.UserResponse{
+			response := respones.CustomResponse{
 				Status:      http.StatusCreated,
 				Message:     SUCCESS,
 				Description: USER_SIGNUP_SUCCESS,
@@ -105,7 +105,7 @@ func SignInUser() gin.HandlerFunc {
 		err := userCollection.FindOne(ctx, bson.M{"_id": userID}).Decode(&result)
 		if err != nil {
 			log.Printf("Failed to verify ID token: %v", err)
-			response := respones.UserResponse{
+			response := respones.CustomResponse{
 				Status:      http.StatusUnauthorized,
 				Message:     ERROR,
 				Description: "error firebase find one",
@@ -115,7 +115,7 @@ func SignInUser() gin.HandlerFunc {
 			return
 		}
 
-		response := respones.UserResponse{
+		response := respones.CustomResponse{
 			Status:      http.StatusOK,
 			Message:     SUCCESS,
 			Description: USER_SIGNIN_SUCCESS,
@@ -133,7 +133,7 @@ func SignUpUser() gin.HandlerFunc {
 		// validate the request body
 		var user models.User
 		if err := c.BindJSON(&user); err != nil {
-			response := respones.UserResponse{
+			response := respones.CustomResponse{
 				Status:      http.StatusBadRequest,
 				Message:     ERROR,
 				Description: EMAIL_PASSWORD_NULL,
@@ -153,7 +153,7 @@ func SignUpUser() gin.HandlerFunc {
 
 		_, err := userCollection.InsertOne(ctx, newUser)
 		if err != nil {
-			response := respones.UserResponse{
+			response := respones.CustomResponse{
 				Status:      http.StatusBadRequest,
 				Message:     ERROR,
 				Description: MONGO_ERROR,
@@ -164,7 +164,7 @@ func SignUpUser() gin.HandlerFunc {
 		}
 
 		// Map response succss and sending client
-		response := respones.UserResponse{
+		response := respones.CustomResponse{
 			Status:      http.StatusCreated,
 			Message:     SUCCESS,
 			Description: USER_SIGNUP_SUCCESS,

@@ -13,11 +13,10 @@ func ErrorHandler() gin.HandlerFunc {
 		c.Next()
 
 		if len(c.Errors) > 0 {
-			// Map response succss and sending client
-			response := respones.UserResponse{
+			response := respones.CustomResponse{
 				Status:      http.StatusInternalServerError,
-				Message:     "Error",
-				Description: "Internal Error",
+				Message:     ERROR,
+				Description: c.Errors.String(),
 				Data:        nil,
 			}
 			c.JSON(http.StatusInternalServerError, response)
