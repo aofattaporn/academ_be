@@ -9,32 +9,41 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func CreateResource(c *gin.Context) {
-	// Implement your logic to create a resource in MongoDB
+var userService services.UserService
 
+func init() {
+	userService = &services.ConcreteUserService{}
+}
+
+func SetUserService(us services.UserService) {
+	userService = us
+}
+
+// Exported function
+func CreateResource(c *gin.Context) {
 	// validate the request body
 	var user models.User
 	if err := c.BindJSON(&user); err != nil {
 		response := respones.UserResponse{
 			Status:      http.StatusBadRequest,
 			Message:     "ERROR222",
-			Description: "EMAIL_PASSWORD_NULL",
+			Description: "Input can't be mapped from JSON",
 			Data:        err.Error(),
 		}
 		c.AbortWithStatusJSON(http.StatusBadRequest, response)
+		return
 	}
 
-	user.Id = "1"
-
-	err := services.CreateUser(&user)
+	err := userService.CreateUser(&user)
 	if err != nil {
 		response := respones.UserResponse{
 			Status:      http.StatusBadRequest,
 			Message:     "ERROR1111",
-			Description: "EMAIL_PASSWORD_NULL",
+			Description: "Can't create user in service",
 			Data:        err.Error(),
 		}
 		c.AbortWithStatusJSON(http.StatusBadRequest, response)
+		return
 	}
 
 	response := respones.UserResponse{
