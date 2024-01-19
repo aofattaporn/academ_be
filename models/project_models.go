@@ -14,17 +14,16 @@ type Project struct {
 	ProjectEndDate     time.Time           `json:"projectEndDate,omitempty" validate:"required"`
 	Views              []View              `json:"views,omitempty" validate:"required"`
 	Members            []Member            `json:"members,omitempty" validate:"required"`
-	Roles              []Role              `json:"roles,omitempty" validate:"required"`
+	Roles              []Role              `json:"roles,omitempty"`
 	InvitationRequests []InvitationRequest `json:"invitationRequest,omitempty"`
 }
 
 type View string
 
 type Member struct {
-	ID           string `bson:"_id" json:"id,omitempty"`
-	Email        string `bson:"email" json:"email,omitempty" validate:"required,email"`
-	Roles        Role   `bson:"roles" json:"roles,omitempty" validate:"required"`
-	InviteStatus bool   `bson:"inviteStatus" json:"inviteStatus,omitempty"`
+	ID    string `bson:"_id" json:"id,omitempty"`
+	Email string `bson:"email" json:"email,omitempty" validate:"required,email"`
+	Roles Role   `bson:"roles" json:"roles,omitempty" validate:"required"`
 }
 
 type Role string
