@@ -19,10 +19,10 @@ func CreateProject(c *gin.Context) {
 		return
 	}
 
+	// Create a new project
 	project.ProjectStartDate, _ = time.Parse(time.RFC3339, project.ProjectStartDate.Format(time.RFC3339))
 	project.ProjectEndDate, _ = time.Parse(time.RFC3339, project.ProjectEndDate.Format(time.RFC3339))
 
-	// Create a new project
 	newProject := models.Project{
 		ID:                 primitive.NewObjectID(),
 		ProjectName:        project.ProjectName,
