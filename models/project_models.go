@@ -22,9 +22,10 @@ type Project struct {
 type View string
 
 type Member struct {
-	ID    string `bson:"_id" json:"id,omitempty"`
-	Email string `bson:"email" json:"email,omitempty" validate:"required,email"`
-	Roles Role   `bson:"roles" json:"roles,omitempty" validate:"required"`
+	ID       string `bson:"_id" json:"id,omitempty"`
+	Email    string `bson:"email" json:"email,omitempty" validate:"required,email"`
+	FullName string `json:"fullName,omitempty" validate:"required"`
+	Roles    Role   `bson:"roles" json:"roles,omitempty" validate:"required"`
 }
 
 type Role string
