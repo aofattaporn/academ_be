@@ -38,7 +38,10 @@ func GetUser(c *gin.Context) {
 func CreateUserByGoogle(c *gin.Context) {
 
 	userID := c.MustGet("userID").(string)
-	count := services.FindUserAndCount(c, userID)
+	count, err := services.FindUserAndCount(c, userID)
+	if err != nil {
+		handleBadRequest(c, ERROR, MONGO_ERROR)
+	}
 
 	if count < 0 {
 
@@ -56,7 +59,6 @@ func CreateUserByGoogle(c *gin.Context) {
 		services.CreateUser(c, &newUser)
 
 		handleSuccess(c, http.StatusCreated, SUCCESS, USER_SIGNUP_SUCCESS)
-
 	} else {
 		handleSuccess(c, http.StatusCreated, SUCCESS, USER_SIGNUP_SUCCESS)
 	}
