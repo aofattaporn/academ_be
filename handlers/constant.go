@@ -37,11 +37,12 @@ func handleBadRequest(c *gin.Context, message, description string) {
 	c.AbortWithStatusJSON(http.StatusBadRequest, response)
 }
 
-func handleSuccess(c *gin.Context, statusCode int, message, description string) {
+func handleSuccess(c *gin.Context, statusCode int, message, description string, data interface{}) {
 	response := respones.CustomResponse{
 		Status:      statusCode,
 		Message:     message,
 		Description: description,
+		Data:        data,
 	}
 	c.JSON(statusCode, response)
 }

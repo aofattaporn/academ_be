@@ -24,15 +24,20 @@ func CreateUser(c *gin.Context) {
 	}
 	services.CreateUser(c, &newUser)
 
-	handleSuccess(c, http.StatusCreated, SUCCESS, USER_SIGNUP_SUCCESS)
+	handleSuccess(c, http.StatusCreated, SUCCESS, USER_SIGNUP_SUCCESS, nil)
 }
 
 func GetUser(c *gin.Context) {
 
+	var user *models.UserResponse
 	userID := c.MustGet("userID").(string)
-	services.FindUserOneById(c, userID)
+	user, err := services.FindUserOneById(c, userID)
+	if err != nil {
+		handleBadRequest(c, ERROR, MONGO_ERROR)
+		return
+	}
 
-	handleSuccess(c, http.StatusCreated, SUCCESS, USER_SIGNUP_SUCCESS)
+	handleSuccess(c, http.StatusCreated, SUCCESS, USER_SIGNUP_SUCCESS, user)
 }
 
 func CreateUserByGoogle(c *gin.Context) {
@@ -58,8 +63,8 @@ func CreateUserByGoogle(c *gin.Context) {
 		}
 		services.CreateUser(c, &newUser)
 
-		handleSuccess(c, http.StatusCreated, SUCCESS, USER_SIGNUP_SUCCESS)
+		handleSuccess(c, http.StatusCreated, SUCCESS, USER_SIGNUP_SUCCESS, nil)
 	} else {
-		handleSuccess(c, http.StatusCreated, SUCCESS, USER_SIGNUP_SUCCESS)
+		handleSuccess(c, http.StatusCreated, SUCCESS, USER_SIGNUP_SUCCESS, nil)
 	}
 }
