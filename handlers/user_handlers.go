@@ -10,49 +10,62 @@ import (
 
 func CreateUser(c *gin.Context) {
 
+	// mapping request body
 	var user models.User
 	if err := c.BindJSON(&user); err != nil {
-		handleBussinessError(c, ERROR, err.Error())
+		handleBussinessError(c, err.Error())
 		return
 	}
 
+	// mapping save data on database
 	userID := c.MustGet("userID").(string)
 	newUser := models.User{
 		Id:       userID,
 		Email:    user.Email,
 		FullName: user.FullName,
 	}
-	services.CreateUser(c, &newUser)
+
+	err := services.CreateUser(c, &newUser)
+	if err != nil {
+		handleTechnicalError(c, err.Error())
+		return
+	}
 
 	handleSuccess(c, http.StatusCreated, SUCCESS, USER_SIGNUP_SUCCESS, nil)
 }
 
 func GetUser(c *gin.Context) {
 
+	// getting userID
 	var user *models.UserResponse
 	userID := c.MustGet("userID").(string)
+
+	// find user in database from header
 	user, err := services.FindUserOneById(c, userID)
 	if err != nil {
-		handleBussinessError(c, ERROR, MONGO_ERROR)
+		handleTechnicalError(c, err.Error())
 		return
 	}
-
 	handleSuccess(c, http.StatusCreated, SUCCESS, USER_SIGNUP_SUCCESS, user)
 }
 
 func CreateUserByGoogle(c *gin.Context) {
 
+	// getting userID
 	userID := c.MustGet("userID").(string)
+
+	// find user and count
 	count, err := services.FindUserAndCount(c, userID)
 	if err != nil {
-		handleBussinessError(c, ERROR, MONGO_ERROR)
+		handleTechnicalError(c, err.Error())
 	}
 
-	if count < 0 {
+	if count < 1 {
 
+		// no userId on database
 		var user models.User
 		if err := c.BindJSON(&user); err != nil {
-			handleBussinessError(c, ERROR, err.Error())
+			handleBussinessError(c, err.Error())
 			return
 		}
 
@@ -65,6 +78,8 @@ func CreateUserByGoogle(c *gin.Context) {
 
 		handleSuccess(c, http.StatusCreated, SUCCESS, USER_SIGNUP_SUCCESS, nil)
 	} else {
+
+		// already existing user in database
 		handleSuccess(c, http.StatusCreated, SUCCESS, USER_SIGNUP_SUCCESS, nil)
 	}
 }

@@ -10,7 +10,10 @@ import (
 const (
 
 	// Response Status constant
-	SUCCESS             string = "Success"
+	SUCCESS         string = "SUCCESS"
+	REQUEST_SUCCESS string = "REQUEST SUCCESS"
+	CREATE_SUCCESS  string = "CREATE SUCCESS"
+
 	USER_SIGNIN_SUCCESS string = "User Sign In Sccuess"
 	USER_SIGNUP_SUCCESS string = "User Sign Up Sccuess"
 
@@ -36,24 +39,22 @@ const (
 	TOKEN string = "token"
 )
 
-func handleBussinessError(c *gin.Context, message, description string) {
+func handleBussinessError(c *gin.Context, description string) {
 	response := respones.CustomResponse{
 		Status:      CODE_STATUS_1899,
 		Message:     BUSSINESS_ERROR,
-		Description: message,
-		Data:        description,
+		Description: description,
 	}
-	c.AbortWithStatusJSON(http.StatusBadRequest, response)
+	c.AbortWithStatusJSON(http.StatusOK, response)
 }
 
-func handleTechnicalError(c *gin.Context, message, description string) {
+func handleTechnicalError(c *gin.Context, description string) {
 	response := respones.CustomResponse{
 		Status:      CODE_STATUS_1999,
 		Message:     TECHNICAL_ERROR,
-		Description: message,
-		Data:        description,
+		Description: description,
 	}
-	c.AbortWithStatusJSON(http.StatusBadRequest, response)
+	c.AbortWithStatusJSON(http.StatusOK, response)
 }
 
 func handleSuccess(c *gin.Context, statusCode int, message, description string, data interface{}) {
