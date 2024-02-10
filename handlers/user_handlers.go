@@ -12,7 +12,7 @@ func CreateUser(c *gin.Context) {
 
 	var user models.User
 	if err := c.BindJSON(&user); err != nil {
-		handleBadRequest(c, ERROR, err.Error())
+		handleBussinessError(c, ERROR, err.Error())
 		return
 	}
 
@@ -33,7 +33,7 @@ func GetUser(c *gin.Context) {
 	userID := c.MustGet("userID").(string)
 	user, err := services.FindUserOneById(c, userID)
 	if err != nil {
-		handleBadRequest(c, ERROR, MONGO_ERROR)
+		handleBussinessError(c, ERROR, MONGO_ERROR)
 		return
 	}
 
@@ -45,14 +45,14 @@ func CreateUserByGoogle(c *gin.Context) {
 	userID := c.MustGet("userID").(string)
 	count, err := services.FindUserAndCount(c, userID)
 	if err != nil {
-		handleBadRequest(c, ERROR, MONGO_ERROR)
+		handleBussinessError(c, ERROR, MONGO_ERROR)
 	}
 
 	if count < 0 {
 
 		var user models.User
 		if err := c.BindJSON(&user); err != nil {
-			handleBadRequest(c, ERROR, err.Error())
+			handleBussinessError(c, ERROR, err.Error())
 			return
 		}
 
