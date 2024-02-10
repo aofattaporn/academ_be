@@ -24,10 +24,6 @@ func ConnectDB() *mongo.Client {
 		log.Fatalf("Error connecting to MongoDB: %v", err)
 	}
 
-	if err := pingMongoDB(ctx, client); err != nil {
-		log.Fatalf("Error pinging MongoDB: %v", err)
-	}
-
 	fmt.Println("Connected to MongoDB")
 	return client
 }
@@ -35,9 +31,4 @@ func ConnectDB() *mongo.Client {
 // GetCollection returns a MongoDB collection from the given client and collection name
 func GetCollection(client *mongo.Client, collectionName string) *mongo.Collection {
 	return client.Database(EnvMongoDatabase()).Collection(collectionName)
-}
-
-// pingMongoDB pings MongoDB to check the connection
-func pingMongoDB(ctx context.Context, client *mongo.Client) error {
-	return client.Ping(ctx, nil)
 }
