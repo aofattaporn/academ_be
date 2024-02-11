@@ -12,7 +12,7 @@ import (
 
 func GetAllMyProjects(c *gin.Context) {
 	// Extract the user_id from the request parameters
-	userID := c.Param("user_id")
+	userID := c.Param("userID")
 
 	// Call your business logic function to get projects by user ID
 	projects, err := services.GetProjectsByMemberUserID(c, userID)
@@ -35,6 +35,7 @@ func CreateProject(c *gin.Context) {
 
 	// Get the user ID from the context
 	userID := c.MustGet("userID").(string)
+	userName := c.GetHeader("userName")
 
 	// Set up roles
 	ownerID := primitive.NewObjectID()
@@ -49,7 +50,7 @@ func CreateProject(c *gin.Context) {
 
 	// Set up members
 	members := []models.Member{
-		{UserID: userID, UserName: "Aof", RoleID: ownerID},
+		{UserID: userID, UserName: userName, RoleID: ownerID},
 	}
 
 	// Create a new project instance
@@ -73,7 +74,7 @@ func CreateProject(c *gin.Context) {
 		return
 	}
 
-	handleSuccess(c, http.StatusCreated, SUCCESS, USER_SIGNUP_SUCCESS, nil)
+	handleSuccess(c, http.StatusOK, SUCCESS, CREATE_PROJECT_SUCCESS, nil)
 }
 
 func setUpProcesses() []models.Process {

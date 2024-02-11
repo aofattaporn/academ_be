@@ -14,8 +14,9 @@ const (
 	REQUEST_SUCCESS string = "REQUEST SUCCESS"
 	CREATE_SUCCESS  string = "CREATE SUCCESS"
 
-	USER_SIGNIN_SUCCESS string = "User Sign In Sccuess"
-	USER_SIGNUP_SUCCESS string = "User Sign Up Sccuess"
+	USER_SIGNIN_SUCCESS    string = "User Sign In Sccuess"
+	USER_SIGNUP_SUCCESS    string = "User Sign Up Sccuess"
+	CREATE_PROJECT_SUCCESS string = "CREATE PROJECT SUCCESS"
 
 	ERROR                 string = "ERROR"
 	ACCESS_FORBIDEN_ERROR string = "ACCESS FORBIDEN ERROR"
