@@ -12,7 +12,7 @@ import (
 
 func GetAllMyProjects(c *gin.Context) {
 	// Extract the user_id from the request parameters
-	userID := c.Param("userID")
+	userID := c.MustGet("userID").(string)
 
 	// Call your business logic function to get projects by user ID
 	projects, err := services.GetProjectsByMemberUserID(c, userID)
@@ -53,12 +53,30 @@ func CreateProject(c *gin.Context) {
 		{UserID: userID, UserName: userName, RoleID: ownerID},
 	}
 
+	// set up invite request
+	var invite = []models.Invite{}
+
+	for _, v := range projectReq.InviteRequests {
+		var roleId primitive.ObjectID
+		if v.InviteRole == "Owner" {
+			roleId = ownerID
+		} else {
+			roleId = memberID
+		}
+		invite = append(invite, models.Invite{
+			InviteRoleID: roleId,
+			InviteEmail:  v.InviteEmail,
+			InviteRole:   v.InviteRole,
+			InviteDate:   time.Now(),
+		})
+	}
+
 	// Create a new project instance
 	newProject := models.Project{
 		ProjectProfile:   projectReq.ProjectProfile,
 		ProjectStartDate: projectReq.ProjectStartDate,
 		ProjectEndDate:   projectReq.ProjectEndDate,
-		InviteRequests:   projectReq.InviteRequests,
+		Invite:           invite,
 		Views:            projectReq.Views,
 		CreatedAt:        time.Now(),
 		UpdatedAt:        time.Now(),

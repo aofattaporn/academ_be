@@ -23,12 +23,12 @@ func CreateProject(c *gin.Context, newUser *models.Project) (err error) {
 	return nil
 }
 
-func GetProjectsByMemberUserID(c *gin.Context, myUserID string) (project []models.Project, err error) {
+func GetProjectsByMemberUserID(c *gin.Context, myUserID string) (projects []models.ListMyProjectRes, err error) {
 	ctx, cancel := context.WithTimeout(c, 5*time.Second)
 	defer cancel()
 
 	// Define filter to find projects where Members.UserID equals myUserID
-	filter := bson.M{"members.userID": myUserID}
+	filter := bson.M{"members": bson.M{"$elemMatch": bson.M{"userId": myUserID}}}
 
 	// Define options to specify fields to include
 	projection := bson.M{"_id": 1, "projectProfile": 1}
@@ -41,9 +41,13 @@ func GetProjectsByMemberUserID(c *gin.Context, myUserID string) (project []model
 	}
 	defer cursor.Close(ctx)
 
-	var projects []models.Project
+	// Decode projects directly into the result slice
 	if err := cursor.All(ctx, &projects); err != nil {
 		return nil, err
+	}
+
+	if len(projects) == 0 {
+		return []models.ListMyProjectRes{}, nil
 	}
 
 	return projects, nil
