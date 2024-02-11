@@ -25,6 +25,7 @@ func main() {
 
 	// Routes
 	routes.UserRoute(router)
+	routes.ProjectRoute(router)
 
 	router.Run("0.0.0.0:8080")
 }
