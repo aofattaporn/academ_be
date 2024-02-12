@@ -7,6 +7,7 @@ import (
 )
 
 func ProjectRoute(router *gin.Engine) {
+	router.GET("/api/v1/test", handlers.GetTester)
 	router.GET("/api/v1/projects/users/id", handlers.GetAllMyProjects)
 	router.POST("/api/v1/projects/users/id", handlers.CreateProject)
 }
