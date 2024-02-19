@@ -15,7 +15,7 @@ func CreateProject(c *gin.Context, newUser *models.Project) (err error) {
 	ctx, cancel := context.WithTimeout(c, 5*time.Second)
 	defer cancel()
 
-	_, err = configs.GetCollection(mongoClient, "Project").InsertOne(ctx, newUser)
+	_, err = configs.GetCollection(mongoClient, PROJECT_COLLECTION).InsertOne(ctx, newUser)
 	if err != nil {
 		return err
 	}
