@@ -36,6 +36,10 @@ const (
 
 	Authorization string = "Authorization"
 
+	PROCESS_DEFAULT_TODO        string = "Todo"
+	PROCESS_DEFAULT_IN_PROGRESS string = "In Progress"
+	PROCESS_DEFAULT_DONE        string = "Done"
+
 	// validation constant
 	TOKEN string = "token"
 )

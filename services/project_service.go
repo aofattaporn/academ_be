@@ -35,7 +35,7 @@ func GetProjectsByMemberUserID(c *gin.Context, myUserID string) (projects []mode
 	opts := options.Find().SetProjection(projection)
 
 	// Find projects matching the filter
-	cursor, err := configs.GetCollection(mongoClient, "Project").Find(ctx, filter, opts)
+	cursor, err := configs.GetCollection(mongoClient, PROJECT_COLLECTION).Find(ctx, filter, opts)
 	if err != nil {
 		return nil, err
 	}

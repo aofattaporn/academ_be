@@ -34,8 +34,7 @@ services:
     depends_on:
       - mongo
     environment:
-      MONGO_URI: mongodb://root:example@mongo:27017/
-      MONGOURI: mongodb://root:example@mongo:27017/
+      MONGOURI: mongodb+srv://academAdmin:96NFgAn7zut7kkEz@academcluster1.zwrcziv.mongodb.net/?retryWrites=true&w=majority
       MONGODATABASE: academDB
     networks:
       - my_network

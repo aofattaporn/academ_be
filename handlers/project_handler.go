@@ -27,22 +27,22 @@ func GetAllMyProjects(c *gin.Context) {
 func CreateProject(c *gin.Context) {
 
 	// Mapping request project body
-	var projectReq models.ProjectReq
+	var projectReq models.CreateProject
 	if err := c.BindJSON(&projectReq); err != nil {
 		handleBussinessError(c, err.Error())
 		return
 	}
 
 	// Get the user ID from the context
-	userID := c.MustGet("userID").(string)
+	userId := c.MustGet("userID").(string)
 	userName := c.GetHeader("userName")
 
 	// Set up roles
-	ownerID := primitive.NewObjectID()
-	memberID := primitive.NewObjectID()
+	ownerId := primitive.NewObjectID()
+	memberId := primitive.NewObjectID()
 	roles := []models.Role{
-		{RoleID: ownerID, RoleName: "Owner"},
-		{RoleID: memberID, RoleName: "Member"},
+		{RoleId: ownerId, RoleName: "Owner"},
+		{RoleId: memberId, RoleName: "Member"},
 	}
 
 	// Set up processes
@@ -50,7 +50,7 @@ func CreateProject(c *gin.Context) {
 
 	// Set up members
 	members := []models.Member{
-		{UserID: userID, UserName: userName, RoleID: ownerID},
+		{UserId: userId, UserName: userName, RoleId: ownerId},
 	}
 
 	// set up invite request
@@ -59,12 +59,12 @@ func CreateProject(c *gin.Context) {
 	for _, v := range projectReq.InviteRequests {
 		var roleId primitive.ObjectID
 		if v.InviteRole == "Owner" {
-			roleId = ownerID
+			roleId = ownerId
 		} else {
-			roleId = memberID
+			roleId = memberId
 		}
 		invite = append(invite, models.Invite{
-			InviteRoleID: roleId,
+			InviteRoleId: roleId,
 			InviteEmail:  v.InviteEmail,
 			InviteRole:   v.InviteRole,
 			InviteDate:   time.Now(),
@@ -96,11 +96,11 @@ func CreateProject(c *gin.Context) {
 }
 
 func setUpProcesses() []models.Process {
-	processStr := []string{"Todo", "Inprogress", "Done"}
+	processStr := []string{PROCESS_DEFAULT_TODO, PROCESS_DEFAULT_IN_PROGRESS, PROCESS_DEFAULT_DONE}
 	processes := make([]models.Process, len(processStr))
 	for i, v := range processStr {
 		processes[i] = models.Process{
-			ProcessID:   primitive.NewObjectID(),
+			ProcessId:   primitive.NewObjectID(),
 			ProcessName: v,
 		}
 	}

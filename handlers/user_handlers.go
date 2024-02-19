@@ -4,6 +4,7 @@ import (
 	"academ_be/models"
 	"academ_be/services"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -70,9 +71,11 @@ func CreateUserByGoogle(c *gin.Context) {
 		}
 
 		newUser := models.User{
-			Id:       userID,
-			Email:    user.Email,
-			FullName: user.FullName,
+			Id:        userID,
+			Email:     user.Email,
+			FullName:  user.FullName,
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
 		}
 		services.CreateUser(c, &newUser)
 
