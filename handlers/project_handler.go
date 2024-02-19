@@ -12,7 +12,7 @@ import (
 
 func GetAllMyProjects(c *gin.Context) {
 	// Extract the user_id from the request parameters
-	userID := c.MustGet("userID").(string)
+	userID := c.MustGet(USER_ID).(string)
 
 	// Call your business logic function to get projects by user ID
 	projects, err := services.GetProjectsByMemberUserID(c, userID)
@@ -27,22 +27,24 @@ func GetAllMyProjects(c *gin.Context) {
 func CreateProject(c *gin.Context) {
 
 	// Mapping request project body
-	var projectReq models.CreateProject
-	if err := c.BindJSON(&projectReq); err != nil {
+	var createProject models.CreateProject
+	if err := c.BindJSON(&createProject); err != nil {
 		handleBussinessError(c, err.Error())
 		return
 	}
 
 	// Get the user ID from the context
-	userId := c.MustGet("userID").(string)
-	userName := c.GetHeader("userName")
+	userId := c.MustGet(USER_ID).(string)
+	userName := c.GetHeader(USER_NAME)
 
-	// Set up roles
+	// Set up roles and permission
 	ownerId := primitive.NewObjectID()
 	memberId := primitive.NewObjectID()
+	ownerPermissionId := setUpOwnerPermission(c, FLAG_DEFAULT_OWNER)
+	memberPermissionId := setUpOwnerPermission(c, FLAG_DEFAULT_MEMBER)
 	roles := []models.Role{
-		{RoleId: ownerId, RoleName: "Owner"},
-		{RoleId: memberId, RoleName: "Member"},
+		{RoleId: ownerId, RoleName: ROLE_DEFAULT_OWNER, PermissionId: ownerPermissionId},
+		{RoleId: memberId, RoleName: ROLE_DEFAULT_MEMBER, PermissionId: memberPermissionId},
 	}
 
 	// Set up processes
@@ -56,9 +58,9 @@ func CreateProject(c *gin.Context) {
 	// set up invite request
 	var invite = []models.Invite{}
 
-	for _, v := range projectReq.InviteRequests {
+	for _, v := range createProject.InviteRequests {
 		var roleId primitive.ObjectID
-		if v.InviteRole == "Owner" {
+		if v.InviteRole == ROLE_DEFAULT_OWNER {
 			roleId = ownerId
 		} else {
 			roleId = memberId
@@ -73,11 +75,11 @@ func CreateProject(c *gin.Context) {
 
 	// Create a new project instance
 	newProject := models.Project{
-		ProjectProfile:   projectReq.ProjectProfile,
-		ProjectStartDate: projectReq.ProjectStartDate,
-		ProjectEndDate:   projectReq.ProjectEndDate,
+		ProjectProfile:   createProject.ProjectProfile,
+		ProjectStartDate: createProject.ProjectStartDate,
+		ProjectEndDate:   createProject.ProjectEndDate,
+		Views:            createProject.Views,
 		Invite:           invite,
-		Views:            projectReq.Views,
 		CreatedAt:        time.Now(),
 		UpdatedAt:        time.Now(),
 		Process:          processes,
@@ -105,4 +107,37 @@ func setUpProcesses() []models.Process {
 		}
 	}
 	return processes
+}
+
+func setUpOwnerPermission(c *gin.Context, flag bool) primitive.ObjectID {
+	ownerPermissionID := primitive.NewObjectID()
+
+	// Create permission service
+	permission := models.Permission{
+		Members: models.MembersPermission{
+			AddRole: flag,
+			Invite:  flag,
+			Remove:  flag,
+		},
+		Project: models.ProjectPermission{
+			EditProfile: flag,
+			ManageView:  flag,
+		},
+		Task: models.TaskPermission{
+			AddNew:        flag,
+			Delete:        flag,
+			Edit:          flag,
+			ManageProcess: flag,
+		},
+		Role: models.RolePermission{
+			AddNew: flag,
+			Edit:   flag,
+			Delete: flag,
+		},
+	}
+
+	// Use permission as needed
+	services.CreatePermission(c, &permission)
+
+	return ownerPermissionID
 }

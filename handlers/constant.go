@@ -40,8 +40,15 @@ const (
 	PROCESS_DEFAULT_IN_PROGRESS string = "In Progress"
 	PROCESS_DEFAULT_DONE        string = "Done"
 
+	ROLE_DEFAULT_OWNER  string = "Owner"
+	ROLE_DEFAULT_MEMBER string = "Member"
+	FLAG_DEFAULT_OWNER  bool   = true
+	FLAG_DEFAULT_MEMBER bool   = false
+
 	// validation constant
-	TOKEN string = "token"
+	TOKEN     string = "token"
+	USER_ID   string = "userID"
+	USER_NAME string = "userName"
 )
 
 func handleBussinessError(c *gin.Context, description string) {

@@ -19,7 +19,7 @@ func CreateUser(c *gin.Context) {
 	}
 
 	// mapping save data on database
-	userID := c.MustGet("userID").(string)
+	userID := c.MustGet(USER_ID).(string)
 	newUser := models.User{
 		Id:       userID,
 		Email:    user.Email,
@@ -39,7 +39,7 @@ func GetUser(c *gin.Context) {
 
 	// getting userID
 	var user *models.UserResponse
-	userID := c.MustGet("userID").(string)
+	userID := c.MustGet(USER_ID).(string)
 
 	// find user in database from header
 	user, err := services.FindUserOneById(c, userID)
@@ -53,7 +53,7 @@ func GetUser(c *gin.Context) {
 func CreateUserByGoogle(c *gin.Context) {
 
 	// getting userID
-	userID := c.MustGet("userID").(string)
+	userID := c.MustGet(USER_ID).(string)
 
 	// find user and count
 	count, err := services.FindUserAndCount(c, userID)
