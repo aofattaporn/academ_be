@@ -23,7 +23,7 @@ func CreateProject(c *gin.Context, newUser *models.Project) (err error) {
 	return nil
 }
 
-func GetProjectsByMemberUserID(c *gin.Context, myUserID string) (projects []models.ListMyProjectRes, err error) {
+func GetProjectsByMemberUserID(c *gin.Context, myUserID string) (projects []models.MyProject, err error) {
 	ctx, cancel := context.WithTimeout(c, 5*time.Second)
 	defer cancel()
 
@@ -47,7 +47,7 @@ func GetProjectsByMemberUserID(c *gin.Context, myUserID string) (projects []mode
 	}
 
 	if len(projects) == 0 {
-		return []models.ListMyProjectRes{}, nil
+		return []models.MyProject{}, nil
 	}
 
 	return projects, nil

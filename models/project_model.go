@@ -70,10 +70,13 @@ type CreateInvite struct {
 	InviteEmail string `bson:"inviteEmail"`
 }
 
-// --------------- Create Project Models --------------------
+// --------------- GET Project Models --------------------
 // ----------------------------------------------------------
 
-type ListMyProjectRes struct {
-	ID             primitive.ObjectID `bson:"_id,omitempty"`
-	ProjectProfile ProjectProfile     `bson:"projectProfile"`
+type MyProject struct {
+	ProjectId        primitive.ObjectID `bson:"_id,omitempty"`
+	ProjectProfile   ProjectProfile     `bson:"projectProfile"`
+	Members          []Member           `bson:"members"`
+	ProjectStartDate time.Time          `bson:"projectStartDate"`
+	ProjectEndDate   time.Time          `bson:"projectEndDate"`
 }

@@ -21,7 +21,7 @@ func GetAllMyProjects(c *gin.Context) {
 		return
 	}
 
-	handleSuccess(c, http.StatusCreated, SUCCESS, USER_SIGNUP_SUCCESS, projects)
+	handleSuccess(c, http.StatusCreated, SUCCESS, GET_MY_PROJECT_SUCCESS, projects)
 }
 
 func CreateProject(c *gin.Context) {

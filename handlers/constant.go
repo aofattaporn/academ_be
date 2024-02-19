@@ -17,6 +17,7 @@ const (
 	USER_SIGNIN_SUCCESS    string = "User Sign In Sccuess"
 	USER_SIGNUP_SUCCESS    string = "User Sign Up Sccuess"
 	CREATE_PROJECT_SUCCESS string = "CREATE PROJECT SUCCESS"
+	GET_MY_PROJECT_SUCCESS string = "GET MY PROJECT SUCCESS"
 
 	ERROR                 string = "ERROR"
 	ACCESS_FORBIDEN_ERROR string = "ACCESS FORBIDEN ERROR"
