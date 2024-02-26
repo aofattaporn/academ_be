@@ -37,11 +37,11 @@ func main() {
 
 	// Run database
 	configs.ConnectDB()
-	// admin := configs.ConnectFirebase()
+	admin := configs.ConnectFirebase()
 
 	// Middlewares
 	router.Use(middlewares.CORSMiddleware())
-	// router.Use(middlewares.AuthRequire(admin))
+	router.Use(middlewares.AuthRequire(admin))
 	router.Use(middlewares.ErrorHandler())
 
 	// Routes

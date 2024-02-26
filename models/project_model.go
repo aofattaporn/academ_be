@@ -26,8 +26,8 @@ type Project struct {
 }
 
 type ProjectProfile struct {
-	ProjectName string `bson:"projectName"`
-	AvatarColor string `bson:"avatarColor"`
+	ProjectName string `bson:"projectName" json:"projectName"`
+	AvatarColor string `bson:"avatarColor" json:"avatarColor"`
 }
 
 type Process struct {
@@ -36,9 +36,9 @@ type Process struct {
 }
 
 type Member struct {
-	UserId   string             `bson:"userId"`
-	UserName string             `bson:"userName"`
-	RoleId   primitive.ObjectID `bson:"roleId"`
+	UserId   string             `bson:"userId" json:"userId"`
+	UserName string             `bson:"userName" json:"userName"`
+	RoleId   primitive.ObjectID `bson:"roleId" json:"roleId"`
 }
 
 type Role struct {
@@ -58,11 +58,9 @@ type Invite struct {
 // ----------------------------------------------------------
 
 type CreateProject struct {
-	ProjectProfile   ProjectProfile `bson:"projectProfile"`
-	ProjectStartDate time.Time      `bson:"projectStartDate"`
-	ProjectEndDate   time.Time      `bson:"projectEndDate"`
-	Views            []string       `bson:"views"`
-	InviteRequests   []CreateInvite `bson:"inviteRequests"`
+	ProjectName    string    `bson:"projectName"`
+	ProjectEndDate time.Time `bson:"projectEndDate"`
+	Views          []string  `bson:"views"`
 }
 
 type CreateInvite struct {
@@ -74,9 +72,9 @@ type CreateInvite struct {
 // ----------------------------------------------------------
 
 type MyProject struct {
-	ProjectId        primitive.ObjectID `bson:"_id,omitempty"`
-	ProjectProfile   ProjectProfile     `bson:"projectProfile"`
-	Members          []Member           `bson:"members"`
-	ProjectStartDate time.Time          `bson:"projectStartDate"`
-	ProjectEndDate   time.Time          `bson:"projectEndDate"`
+	ProjectId        primitive.ObjectID `bson:"_id,omitempty" json:"projectId"`
+	ProjectProfile   ProjectProfile     `bson:"projectProfile" json:"projectProfile"`
+	Members          []Member           `bson:"members" json:"members"`
+	ProjectStartDate time.Time          `bson:"projectStartDate" json:"projectStartDate"`
+	ProjectEndDate   time.Time          `bson:"projectEndDate" json:"projectEndDate"`
 }

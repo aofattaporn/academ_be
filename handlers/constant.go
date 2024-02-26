@@ -52,6 +52,17 @@ const (
 	USER_NAME string = "userName"
 )
 
+var DEFULT_COLORS = []string{
+	"#AF8AE2",
+	"#6985FF",
+	"#3FB1B2",
+	"#64C7A2",
+	"#FABE34",
+	"#E78945",
+	"#DD646A",
+	"#BDBDBD",
+}
+
 func handleBussinessError(c *gin.Context, description string) {
 	response := respones.CustomResponse{
 		Status:      CODE_STATUS_1899,

@@ -3,6 +3,7 @@ package handlers
 import (
 	"academ_be/models"
 	"academ_be/services"
+	"math/rand"
 	"net/http"
 	"time"
 
@@ -34,7 +35,7 @@ func CreateProject(c *gin.Context) {
 	}
 
 	// Get the user ID from the context
-	userId := c.MustGet(USER_ID).(string)
+	userId := c.MustGet("userID").(string)
 	userName := c.GetHeader(USER_NAME)
 
 	// Set up roles and permission
@@ -55,31 +56,16 @@ func CreateProject(c *gin.Context) {
 		{UserId: userId, UserName: userName, RoleId: ownerId},
 	}
 
-	// set up invite request
-	var invite = []models.Invite{}
-
-	for _, v := range createProject.InviteRequests {
-		var roleId primitive.ObjectID
-		if v.InviteRole == ROLE_DEFAULT_OWNER {
-			roleId = ownerId
-		} else {
-			roleId = memberId
-		}
-		invite = append(invite, models.Invite{
-			InviteRoleId: roleId,
-			InviteEmail:  v.InviteEmail,
-			InviteRole:   v.InviteRole,
-			InviteDate:   time.Now(),
-		})
-	}
-
 	// Create a new project instance
 	newProject := models.Project{
-		ProjectProfile:   createProject.ProjectProfile,
-		ProjectStartDate: createProject.ProjectStartDate,
+		ProjectProfile: models.ProjectProfile{
+			ProjectName: createProject.ProjectName,
+			AvatarColor: getRandomColor(),
+		},
+		ProjectStartDate: time.Now(),
 		ProjectEndDate:   createProject.ProjectEndDate,
 		Views:            createProject.Views,
-		Invite:           invite,
+		Invite:           []models.Invite{},
 		CreatedAt:        time.Now(),
 		UpdatedAt:        time.Now(),
 		Process:          processes,
@@ -94,7 +80,14 @@ func CreateProject(c *gin.Context) {
 		return
 	}
 
-	handleSuccess(c, http.StatusOK, SUCCESS, CREATE_PROJECT_SUCCESS, nil)
+	// Create a new project instance
+	newProjectRes := models.MyProject{
+		ProjectProfile: newProject.ProjectProfile,
+		ProjectEndDate: newProject.ProjectEndDate,
+		Members:        newProject.Members,
+	}
+
+	handleSuccess(c, http.StatusOK, SUCCESS, CREATE_PROJECT_SUCCESS, newProjectRes)
 }
 
 func setUpProcesses() []models.Process {
@@ -140,4 +133,11 @@ func setUpOwnerPermission(c *gin.Context, flag bool) primitive.ObjectID {
 	services.CreatePermission(c, &permission)
 
 	return ownerPermissionID
+}
+
+func getRandomColor() string {
+	source := rand.NewSource(time.Now().UnixNano())
+	random := rand.New(source)
+	randomIndex := random.Intn(len(DEFULT_COLORS))
+	return DEFULT_COLORS[randomIndex]
 }
