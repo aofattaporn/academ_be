@@ -29,11 +29,13 @@ func GetAllMyProjects(c *gin.Context) {
 	handleSuccess(c, http.StatusCreated, SUCCESS, GET_MY_PROJECT_SUCCESS, projects)
 }
 
-// HealthCheckHandler godoc
+// CreateProject godoc
 // @summary Health Check
 // @description Health checking for the service
 // @id CreateProject
-// @produce plain
+// @tags projects
+// @accept json
+// @produce json
 // @response 200 {string} string "OK"
 // @router /api/v1/projects/users/id [get]
 func CreateProject(c *gin.Context) {

@@ -9,6 +9,15 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// CreateUser godoc
+// @summary Health Check
+// @description Health checking for the service
+// @id CreateUser
+// @tags users
+// @accept json
+// @produce json
+// @response 200 {string} string "OK"
+// @router /api/v1/sign-up [post]
 func CreateUser(c *gin.Context) {
 
 	// mapping request body
@@ -35,6 +44,15 @@ func CreateUser(c *gin.Context) {
 	handleSuccess(c, http.StatusCreated, SUCCESS, USER_SIGNUP_SUCCESS, nil)
 }
 
+// GetUser godoc
+// @summary Health Check
+// @description Health checking for the service
+// @id GetUser
+// @tags users
+// @accept json
+// @produce json
+// @response 200 {string} string "OK"
+// @router /api/v1/users [get]
 func GetUser(c *gin.Context) {
 
 	// getting userID
@@ -50,6 +68,15 @@ func GetUser(c *gin.Context) {
 	handleSuccess(c, http.StatusCreated, SUCCESS, USER_SIGNUP_SUCCESS, user)
 }
 
+// CreateUserByGoogle godoc
+// @summary Health Check
+// @description Health checking for the service
+// @id CreateUserByGoogle
+// @tags users
+// @accept json
+// @produce json
+// @response 200 {string} string "OK"
+// @router /api/v1/sign-in [post]
 func CreateUserByGoogle(c *gin.Context) {
 
 	// getting userID

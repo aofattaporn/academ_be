@@ -18,16 +18,68 @@ info:
 paths:
   /api/v1/projects/users/id:
     get:
+      consumes:
+      - application/json
       description: Health checking for the service
       operationId: CreateProject
       produces:
-      - text/plain
+      - application/json
       responses:
         "200":
           description: OK
           schema:
             type: string
       summary: Health Check
+      tags:
+      - projects
+  /api/v1/sign-in:
+    post:
+      consumes:
+      - application/json
+      description: Health checking for the service
+      operationId: CreateUserByGoogle
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Health Check
+      tags:
+      - users
+  /api/v1/sign-up:
+    post:
+      consumes:
+      - application/json
+      description: Health checking for the service
+      operationId: CreateUser
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Health Check
+      tags:
+      - users
+  /api/v1/users:
+    get:
+      consumes:
+      - application/json
+      description: Health checking for the service
+      operationId: GetUser
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Health Check
+      tags:
+      - users
 securityDefinitions:
   BasicAuth:
     type: basic
