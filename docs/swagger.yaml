@@ -15,7 +15,19 @@ info:
   termsOfService: http://swagger.io/terms/
   title: Swagger Example API
   version: "1.0"
-paths: {}
+paths:
+  /api/v1/projects/users/id:
+    get:
+      description: Health checking for the service
+      operationId: CreateProject
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Health Check
 securityDefinitions:
   BasicAuth:
     type: basic

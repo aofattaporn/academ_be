@@ -11,6 +11,10 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+// TODO : Get Project
+func GetProject(c *gin.Context) {}
+
+// TODO: Get Task
 func GetAllMyProjects(c *gin.Context) {
 	// Extract the user_id from the request parameters
 	userID := c.MustGet(USER_ID).(string)
@@ -25,6 +29,13 @@ func GetAllMyProjects(c *gin.Context) {
 	handleSuccess(c, http.StatusCreated, SUCCESS, GET_MY_PROJECT_SUCCESS, projects)
 }
 
+// HealthCheckHandler godoc
+// @summary Health Check
+// @description Health checking for the service
+// @id CreateProject
+// @produce plain
+// @response 200 {string} string "OK"
+// @router /api/v1/projects/users/id [get]
 func CreateProject(c *gin.Context) {
 
 	// Mapping request project body

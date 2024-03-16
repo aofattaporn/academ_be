@@ -26,6 +26,9 @@ import (
 
 	"firebase.google.com/go/auth"
 	"github.com/gin-gonic/gin"
+
+	_ "academ_be/docs"
+
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
@@ -37,17 +40,17 @@ func main() {
 
 	// Run database
 	configs.ConnectDB()
-	admin := configs.ConnectFirebase()
+	// admin := configs.ConnectFirebase()
 
 	// Middlewares
 	router.Use(middlewares.CORSMiddleware())
-	router.Use(middlewares.AuthRequire(admin))
+	// router.Use(middlewares.AuthRequire(admin))
 	router.Use(middlewares.ErrorHandler())
 
 	// Routes
 	routes.UserRoute(router)
 	routes.ProjectRoute(router)
-	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	router.Run("0.0.0.0:8080")
 }
