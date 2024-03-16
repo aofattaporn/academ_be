@@ -31,12 +31,12 @@ type ProjectInfoPermission struct {
 }
 
 type ProjectInfo struct {
-	ProjectId      primitive.ObjectID `bson:"_id,omitempty"`
-	ProjectProfile ProjectProfile     `bson:"projectProfile"`
-	Process        []Process          `bson:"process"`
-	Members        []Member           `bson:"members"`
-	Roles          []Role             `bson:"roles"`
-	Views          []string           `bson:"views"`
+	ProjectId      primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	ProjectProfile ProjectProfile     `bson:"projectProfile"  json:"projectProfile"`
+	Process        []Process          `bson:"process"  json:"process"`
+	Members        []Member           `bson:"members"  json:"members"`
+	Roles          []Role             `bson:"roles"  json:"roles"`
+	Views          []string           `bson:"views"  json:"views"`
 }
 
 type ProjectProfile struct {
