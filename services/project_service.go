@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
@@ -21,6 +22,24 @@ func CreateProject(c *gin.Context, newUser *models.Project) (err error) {
 	}
 
 	return nil
+}
+
+func GetProjectById(c *gin.Context, projectId string) (project *models.ProjectInfo, err error) {
+	ctx, cancel := context.WithTimeout(c, 5*time.Second)
+	defer cancel()
+
+	// Convert projectId string to ObjectId
+	objID, err := primitive.ObjectIDFromHex(projectId)
+	if err != nil {
+		return nil, err
+	}
+
+	err = configs.GetCollection(mongoClient, PROJECT_COLLECTION).FindOne(ctx, bson.M{"_id": objID}).Decode(&project)
+	if err != nil {
+		return nil, err
+	}
+
+	return project, err
 }
 
 func GetProjectsByMemberUserID(c *gin.Context, myUserID string) (projects []models.MyProject, err error) {

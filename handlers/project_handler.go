@@ -11,10 +11,69 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-// TODO : Get Project
-func GetProject(c *gin.Context) {}
+// GetProject godoc
+// @summary Health Check
+// @description Health checking for the service
+// @id GetProject
+// @tags projects
+// @accept json
+// @produce json
+// @response 200 {string} string "OK"
+// @router /api/v1/projects/:projects_id [get]
+func GetProjectById(c *gin.Context) {
+	// Extract the user ID from the request context
+	userID := c.MustGet(USER_ID).(string)
+	projectID := c.Param("projects_id")
 
-// TODO: Get Task
+	// Retrieve the project by ID
+	project, err := services.GetProjectById(c, projectID)
+	if err != nil {
+		handleTechnicalError(c, err.Error())
+		return
+	}
+
+	// Find the role ID corresponding to the user
+	var roleID primitive.ObjectID
+	for _, member := range project.Members {
+		if member.UserId == userID {
+			roleID = member.RoleId
+			break
+		}
+	}
+
+	// Find the permission ID corresponding to the role
+	var permissionID primitive.ObjectID
+	for _, role := range project.Roles {
+		if role.RoleId == roleID {
+			permissionID = role.PermissionId
+			break
+		}
+	}
+
+	// Retrieve the permission by ID
+	permission, err := services.GetPermission(c, permissionID)
+	if err != nil {
+		handleTechnicalError(c, err.Error())
+		return
+	}
+
+	projectInfo := models.ProjectInfoPermission{
+		ProjectInfo:    *project,
+		TaskPermission: permission.Task,
+	}
+
+	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_PROJECT_SUCCESS, projectInfo)
+}
+
+// GetAllMyProjects godoc
+// @summary Health Check
+// @description Health checking for the service
+// @id GetAllMyProjects
+// @tags projects
+// @accept json
+// @produce json
+// @response 200 {string} string "OK"
+// @router /api/v1/projects/users/id [get]
 func GetAllMyProjects(c *gin.Context) {
 	// Extract the user_id from the request parameters
 	userID := c.MustGet(USER_ID).(string)
@@ -37,7 +96,7 @@ func GetAllMyProjects(c *gin.Context) {
 // @accept json
 // @produce json
 // @response 200 {string} string "OK"
-// @router /api/v1/projects/users/id [get]
+// @router /api/v1/projects/users/id [post]
 func CreateProject(c *gin.Context) {
 
 	// Mapping request project body
@@ -143,7 +202,7 @@ func setUpOwnerPermission(c *gin.Context, flag bool) primitive.ObjectID {
 	}
 
 	// Use permission as needed
-	services.CreatePermission(c, &permission)
+	services.CreatePermission(c, &permission, ownerPermissionID)
 
 	return ownerPermissionID
 }

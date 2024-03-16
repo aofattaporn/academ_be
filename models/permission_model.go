@@ -1,15 +1,18 @@
 package models
 
+import "go.mongodb.org/mongo-driver/bson/primitive"
+
 // *********** For Permissions Collections ***************
 
 // -------------------- Permissions -------------------------
 // ----------------------------------------------------------
 
 type Permission struct {
-	Members MembersPermission `bson:"members"`
-	Project ProjectPermission `bson:"project"`
-	Task    TaskPermission    `bson:"task"`
-	Role    RolePermission    `bson:"role"`
+	Id      primitive.ObjectID `bson:"_id,omitempty"`
+	Members MembersPermission  `bson:"members"`
+	Project ProjectPermission  `bson:"project"`
+	Task    TaskPermission     `bson:"task"`
+	Role    RolePermission     `bson:"role"`
 }
 
 type MembersPermission struct {

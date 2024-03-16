@@ -25,14 +25,29 @@ type Project struct {
 	Invite           []Invite           `bson:"invite"`
 }
 
+type ProjectInfoPermission struct {
+	ProjectInfo    ProjectInfo    `bson:"projectInfo" json:"projectInfo"`
+	TaskPermission TaskPermission `bson:"taskPermission" json:"taskPermission"`
+}
+
+type ProjectInfo struct {
+	ProjectId      primitive.ObjectID `bson:"_id,omitempty"`
+	ProjectProfile ProjectProfile     `bson:"projectProfile"`
+	Process        []Process          `bson:"process"`
+	Members        []Member           `bson:"members"`
+	Roles          []Role             `bson:"roles"`
+	Views          []string           `bson:"views"`
+}
+
 type ProjectProfile struct {
 	ProjectName string `bson:"projectName" json:"projectName"`
 	AvatarColor string `bson:"avatarColor" json:"avatarColor"`
 }
 
 type Process struct {
-	ProcessId   primitive.ObjectID `bson:"processId"`
-	ProcessName string             `bson:"processName"`
+	ProcessId    primitive.ObjectID `bson:"processId"`
+	ProcessName  string             `bson:"processName"`
+	ProcessColor string             `bson:"processColor"`
 }
 
 type Member struct {
