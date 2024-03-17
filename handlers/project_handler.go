@@ -167,8 +167,9 @@ func setUpProcesses() []models.Process {
 	processes := make([]models.Process, len(processStr))
 	for i, v := range processStr {
 		processes[i] = models.Process{
-			ProcessId:   primitive.NewObjectID(),
-			ProcessName: v,
+			ProcessId:    primitive.NewObjectID(),
+			ProcessName:  v,
+			ProcessColor: getRandomColor(),
 		}
 	}
 	return processes
