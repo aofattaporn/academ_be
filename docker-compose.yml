@@ -3,26 +3,41 @@ version: "3"
 services:
   mongo:
     image: mongo
+    container_name: my_mongo_db
     restart: always
     ports:
       - 27017:27017
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: example
+    networks:
+      - my_network
 
   mongo-express:
     image: mongo-express
+    container_name: my_mongo_express
     restart: always
     ports:
       - 8081:8081
     environment:
       ME_CONFIG_MONGODB_ADMINUSERNAME: root
       ME_CONFIG_MONGODB_ADMINPASSWORD: example
-      ME_CONFIG_MONGODB_URL: mongodb://root:example@mongo:27017/
+      ME_CONFIG_MONGODB_SERVER: mongo
+    networks:
+      - my_network
 
   app:
     build: .
+    container_name: my_application
     ports:
       - "8080:8080"
     depends_on:
       - mongo
+    environment:
+      MONGOURI: mongodb+srv://academAdmin:96NFgAn7zut7kkEz@academcluster1.zwrcziv.mongodb.net/?retryWrites=true&w=majority
+      MONGODATABASE: academDB
+    networks:
+      - my_network
+
+networks:
+  my_network:

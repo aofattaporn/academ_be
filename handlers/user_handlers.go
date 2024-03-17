@@ -4,10 +4,20 @@ import (
 	"academ_be/models"
 	"academ_be/services"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
+// CreateUser godoc
+// @summary Health Check
+// @description Health checking for the service
+// @id CreateUser
+// @tags users
+// @accept json
+// @produce json
+// @response 200 {string} string "OK"
+// @router /api/v1/sign-up [post]
 func CreateUser(c *gin.Context) {
 
 	// mapping request body
@@ -18,7 +28,7 @@ func CreateUser(c *gin.Context) {
 	}
 
 	// mapping save data on database
-	userID := c.MustGet("userID").(string)
+	userID := c.MustGet(USER_ID).(string)
 	newUser := models.User{
 		Id:       userID,
 		Email:    user.Email,
@@ -34,11 +44,20 @@ func CreateUser(c *gin.Context) {
 	handleSuccess(c, http.StatusCreated, SUCCESS, USER_SIGNUP_SUCCESS, nil)
 }
 
+// GetUser godoc
+// @summary Health Check
+// @description Health checking for the service
+// @id GetUser
+// @tags users
+// @accept json
+// @produce json
+// @response 200 {string} string "OK"
+// @router /api/v1/users [get]
 func GetUser(c *gin.Context) {
 
 	// getting userID
 	var user *models.UserResponse
-	userID := c.MustGet("userID").(string)
+	userID := c.MustGet(USER_ID).(string)
 
 	// find user in database from header
 	user, err := services.FindUserOneById(c, userID)
@@ -49,10 +68,19 @@ func GetUser(c *gin.Context) {
 	handleSuccess(c, http.StatusCreated, SUCCESS, USER_SIGNUP_SUCCESS, user)
 }
 
+// CreateUserByGoogle godoc
+// @summary Health Check
+// @description Health checking for the service
+// @id CreateUserByGoogle
+// @tags users
+// @accept json
+// @produce json
+// @response 200 {string} string "OK"
+// @router /api/v1/sign-in [post]
 func CreateUserByGoogle(c *gin.Context) {
 
 	// getting userID
-	userID := c.MustGet("userID").(string)
+	userID := c.MustGet(USER_ID).(string)
 
 	// find user and count
 	count, err := services.FindUserAndCount(c, userID)
@@ -70,9 +98,11 @@ func CreateUserByGoogle(c *gin.Context) {
 		}
 
 		newUser := models.User{
-			Id:       userID,
-			Email:    user.Email,
-			FullName: user.FullName,
+			Id:        userID,
+			Email:     user.Email,
+			FullName:  user.FullName,
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
 		}
 		services.CreateUser(c, &newUser)
 
