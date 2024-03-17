@@ -1,6 +1,11 @@
 package handlers
 
-import "github.com/gin-gonic/gin"
+import (
+	"academ_be/services"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
 
 // GetAllTasks godoc
 // @summary Health Check
@@ -11,7 +16,17 @@ import "github.com/gin-gonic/gin"
 // @produce json
 // @response 200 {string} string "OK"
 // @router /api/v1/sign-in [post]
-func GetAllTasks(c *gin.Context) {
+func GetAllTasksByProjectId(c *gin.Context) {
+
+	projectId := c.Param("projectId")
+
+	tasks, err := services.GetAllTasksByProjectId(c, projectId)
+	if err != nil {
+		handleTechnicalError(c, err.Error())
+		return
+	}
+
+	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_TASKS_SUCCESS, tasks)
 
 }
 

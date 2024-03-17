@@ -1,0 +1,24 @@
+package models
+
+import (
+	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
+
+// tasksId: string;
+// tasksName: string;
+// processId: string;
+// assignee: string;
+// startDate: Moment;
+// dueDate: Moment;
+
+type Tasks struct {
+	TasksId   primitive.ObjectID `bson:"_id,omitempty" json:"_id"`
+	ProjectId primitive.ObjectID `bson:"projectId" json:"projectId"`
+	TasksName string             `bson:"tasksName" json:"tasksName"`
+	ProcessId Process            `bson:"processId" json:"processId"`
+	Assignee  string             `bson:"assignee" json:"assignee"`
+	StartDate time.Time          `bson:"startDate" json:"startDate"`
+	DueDate   time.Time          `bson:"dueDate" json:"dueDate"`
+}

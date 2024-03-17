@@ -66,7 +66,7 @@ func setupRouter() *gin.Engine {
 		tasks := v1.Group("/tasks")
 		{
 			tasks.POST("/", handlers.CreateTasks)
-			tasks.GET("projects/:projects_id", handlers.GetTasksById)
+			tasks.GET("projects/:projectId", handlers.GetAllTasksByProjectId)
 			tasks.GET("/:tasks_id", handlers.GetTasksById)
 			tasks.PUT("/:tasks_id/process/:process_id", handlers.ChangeProcesss)
 		}

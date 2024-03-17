@@ -11,6 +11,6 @@ const (
 	USER_COLLECTION       string = "User"
 	PROJECT_COLLECTION    string = "Project"
 	PERMISSION_COLLECTION string = "Permission"
-	TASK_COLLECTION       string = "Task"
+	TASKS_COLLECTION      string = "Tasks"
 	CLASS_COLLECTION      string = "Class"
 )

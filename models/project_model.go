@@ -45,9 +45,9 @@ type ProjectProfile struct {
 }
 
 type Process struct {
-	ProcessId    primitive.ObjectID `bson:"processId"`
-	ProcessName  string             `bson:"processName"`
-	ProcessColor string             `bson:"processColor"`
+	ProcessId    primitive.ObjectID `bson:"processId" json:"processId"`
+	ProcessName  string             `bson:"processName" json:"processName"`
+	ProcessColor string             `bson:"processColor" json:"processColor"`
 }
 
 type Member struct {
