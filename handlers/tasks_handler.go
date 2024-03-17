@@ -1,10 +1,12 @@
 package handlers
 
 import (
+	"academ_be/models"
 	"academ_be/services"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // GetAllTasks godoc
@@ -19,7 +21,6 @@ import (
 func GetAllTasksByProjectId(c *gin.Context) {
 
 	projectId := c.Param("projectId")
-
 	tasks, err := services.GetAllTasksByProjectId(c, projectId)
 	if err != nil {
 		handleTechnicalError(c, err.Error())
@@ -40,6 +41,31 @@ func GetAllTasksByProjectId(c *gin.Context) {
 // @response 200 {string} string "OK"
 // @router /api/v1/sign-in [post]
 func CreateTasks(c *gin.Context) {
+	// Bind JSON data to createTasks struct
+	var createTasks models.CreateTasks
+	if err := c.BindJSON(&createTasks); err != nil {
+		handleBussinessError(c, err.Error())
+		return
+	}
+
+	// Generate a new tasks ID
+	createTasks.TasksId = primitive.NewObjectID()
+
+	// Create tasks
+	if err := services.CreateTasks(c, &createTasks); err != nil {
+		handleTechnicalError(c, err.Error())
+		return
+	}
+
+	// Get all tasks by project ID
+	tasks, err := services.GetAllTasksByProjectId(c, createTasks.ProjectId)
+	if err != nil {
+		handleTechnicalError(c, err.Error())
+		return
+	}
+
+	// Return success response
+	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_TASKS_SUCCESS, tasks)
 
 }
 

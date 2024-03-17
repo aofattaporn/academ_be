@@ -8,19 +8,13 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func GetAllTasksByProjectId(c *gin.Context, projectId string) (tasks []models.Tasks, err error) {
 	ctx, cancel := context.WithTimeout(c, 5*time.Second)
 	defer cancel()
 
-	objID, err := primitive.ObjectIDFromHex(projectId)
-	if err != nil {
-		return nil, err
-	}
-
-	cursor, err := configs.GetCollection(mongoClient, TASKS_COLLECTION).Find(ctx, bson.M{"projectId": objID})
+	cursor, err := configs.GetCollection(mongoClient, TASKS_COLLECTION).Find(ctx, bson.M{"projectId": projectId})
 	if err != nil {
 		return nil, err
 	}
@@ -40,4 +34,17 @@ func GetAllTasksByProjectId(c *gin.Context, projectId string) (tasks []models.Ta
 	}
 
 	return tasks, err
+}
+
+func CreateTasks(c *gin.Context, newTasks *models.CreateTasks) (err error) {
+	ctx, cancel := context.WithTimeout(c, 5*time.Second)
+	defer cancel()
+
+	_, err = configs.GetCollection(mongoClient, TASKS_COLLECTION).InsertOne(ctx, &newTasks)
+	if err != nil {
+		return err
+	}
+
+	return nil
+
 }
