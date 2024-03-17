@@ -129,7 +129,9 @@ func CreateProject(c *gin.Context) {
 	}
 
 	// Create a new project instance
+	projectId := primitive.NewObjectID()
 	newProject := models.Project{
+		ProjectId: projectId,
 		ProjectProfile: models.ProjectProfile{
 			ProjectName: createProject.ProjectName,
 			AvatarColor: getRandomColor(),
@@ -154,6 +156,7 @@ func CreateProject(c *gin.Context) {
 
 	// Create a new project instance
 	newProjectRes := models.MyProject{
+		ProjectId:      projectId,
 		ProjectProfile: newProject.ProjectProfile,
 		ProjectEndDate: newProject.ProjectEndDate,
 		Members:        newProject.Members,

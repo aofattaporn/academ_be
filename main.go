@@ -58,7 +58,7 @@ func setupRouter() *gin.Engine {
 
 		projects := v1.Group("/projects")
 		{
-			projects.POST("/users/id", handlers.CreateProject)
+			projects.POST("", handlers.CreateProject)
 			projects.GET("/:projects_id", handlers.GetProjectById)
 			projects.GET("/users/id", handlers.GetAllMyProjects)
 		}
