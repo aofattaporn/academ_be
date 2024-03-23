@@ -35,6 +35,25 @@ func GetAllTasksByProjectId(c *gin.Context, projectId string) (tasks []models.Ta
 	}
 
 	return tasks, err
+
+}
+
+func GetTasksByProjectId(c *gin.Context, projectId string) (tasks *models.Tasks, err error) {
+	ctx, cancel := context.WithTimeout(c, 5*time.Second)
+	defer cancel()
+
+	objID, err := primitive.ObjectIDFromHex(projectId)
+	if err != nil {
+		return nil, err
+	}
+
+	err = configs.GetCollection(mongoClient, TASKS_COLLECTION).FindOne(ctx, bson.M{"_id": objID}).Decode(&tasks)
+	if err != nil {
+		return nil, err
+	}
+
+	return tasks, nil
+
 }
 
 func CreateTasks(c *gin.Context, newTasks *models.CreateTasks) (err error) {

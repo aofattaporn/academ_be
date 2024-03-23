@@ -3,6 +3,7 @@ package handlers
 import (
 	"academ_be/models"
 	"academ_be/services"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -76,6 +77,22 @@ func CreateTasks(c *gin.Context) {
 // @response 200 {string} string "OK"
 // @router /api/v1/sign-in [post]
 func GetTasksById(c *gin.Context) {
+
+	tasksId := c.Param("tasksId")
+	if tasksId == "" {
+		handleBussinessError(c, "Can't to find your Tasks ID")
+	}
+
+	tasks, err := services.GetTasksByProjectId(c, tasksId)
+	if err != nil {
+		handleTechnicalError(c, err.Error())
+		return
+	}
+
+	fmt.Println(&tasks)
+
+	// Return success response
+	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_TASKS_SUCCESS, &tasks)
 
 }
 
