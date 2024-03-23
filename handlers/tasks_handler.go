@@ -41,23 +41,20 @@ func GetAllTasksByProjectId(c *gin.Context) {
 // @response 200 {string} string "OK"
 // @router /api/v1/sign-in [post]
 func CreateTasks(c *gin.Context) {
-	// Bind JSON data to createTasks struct
+
 	var createTasks models.CreateTasks
 	if err := c.BindJSON(&createTasks); err != nil {
 		handleBussinessError(c, err.Error())
 		return
 	}
 
-	// Generate a new tasks ID
 	createTasks.TasksId = primitive.NewObjectID()
 
-	// Create tasks
 	if err := services.CreateTasks(c, &createTasks); err != nil {
 		handleTechnicalError(c, err.Error())
 		return
 	}
 
-	// Get all tasks by project ID
 	tasks, err := services.GetAllTasksByProjectId(c, createTasks.ProjectId)
 	if err != nil {
 		handleTechnicalError(c, err.Error())
@@ -92,5 +89,32 @@ func GetTasksById(c *gin.Context) {
 // @response 200 {string} string "OK"
 // @router /api/v1/sign-in [post]
 func ChangeProcesss(c *gin.Context) {
+
+}
+
+// DeleteTasksById godoc
+// @summary Health Check
+// @description Health checking for the service
+// @id DeleteTasksById
+// @tags users
+// @accept json
+// @produce json
+// @response 200 {string} string "OK"
+// @router /api/v1/sign-in [delete]
+func DeleteTasksById(c *gin.Context) {
+
+	tasksId := c.Param("tasksId")
+	if tasksId == "" {
+		handleBussinessError(c, "Can't to find your Tasks ID")
+	}
+
+	err := services.DeleteTasksByTasksId(c, tasksId)
+	if err != nil {
+		handleTechnicalError(c, err.Error())
+		return
+	}
+
+	// Return success response
+	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_TASKS_SUCCESS, nil)
 
 }

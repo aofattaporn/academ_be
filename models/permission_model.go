@@ -22,15 +22,15 @@ type MembersPermission struct {
 }
 
 type ProjectPermission struct {
-	EditProfile bool `bson:"editProfile"`
-	ManageView  bool `bson:"manageView"`
+	EditProfile bool `bson:"editProfile" json:"editProfile"`
+	ManageView  bool `bson:"manageView" json:"manageView"`
 }
 
 type TaskPermission struct {
-	AddNew        bool `bson:"addNew"`
-	Delete        bool `bson:"delete"`
-	Edit          bool `bson:"edit"`
-	ManageProcess bool `bson:"manageProcess"`
+	AddNew        bool `bson:"addNew" json:"addNew"`
+	Delete        bool `bson:"delete" json:"delete"`
+	Edit          bool `bson:"edit" json:"edit"`
+	ManageProcess bool `bson:"manageProcess" json:"manageProcess"`
 }
 
 type RolePermission struct {
