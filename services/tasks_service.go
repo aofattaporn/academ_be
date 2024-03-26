@@ -86,3 +86,22 @@ func DeleteTasksByTasksId(c *gin.Context, tasksId string) (err error) {
 	return nil
 
 }
+
+func ChangeProcesss(c *gin.Context, tasksId string, processId string) (err error) {
+
+	ctx, cancel := context.WithTimeout(c, 5*time.Second)
+	defer cancel()
+
+	id, _ := primitive.ObjectIDFromHex(tasksId)
+	filter := bson.D{{"_id", id}}
+
+	update := bson.D{{"$set", bson.D{{"processId", processId}}}}
+
+	_, err = configs.GetCollection(mongoClient, TASKS_COLLECTION).UpdateOne(ctx, filter, update)
+	if err != nil {
+		return err
+	}
+
+	return nil
+
+}

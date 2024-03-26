@@ -3,7 +3,6 @@ package handlers
 import (
 	"academ_be/models"
 	"academ_be/services"
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -89,8 +88,6 @@ func GetTasksById(c *gin.Context) {
 		return
 	}
 
-	fmt.Println(&tasks)
-
 	// Return success response
 	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_TASKS_SUCCESS, &tasks)
 
@@ -106,6 +103,22 @@ func GetTasksById(c *gin.Context) {
 // @response 200 {string} string "OK"
 // @router /api/v1/sign-in [post]
 func ChangeProcesss(c *gin.Context) {
+
+	tasksId := c.Param("tasksId")
+	if tasksId == "" {
+		handleBussinessError(c, "Can't to find your Tasks ID")
+	}
+
+	processId := c.Param("processId")
+	if processId == "" {
+		handleBussinessError(c, "Can't to find your Process ID")
+	}
+
+	err := services.ChangeProcesss(c, tasksId, processId)
+	if err != nil {
+		handleTechnicalError(c, err.Error())
+		return
+	}
 
 }
 
