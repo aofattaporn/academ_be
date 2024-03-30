@@ -4,6 +4,7 @@ import (
 	"academ_be/configs"
 	"academ_be/models"
 	"context"
+	"errors"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -104,4 +105,29 @@ func ChangeProcesss(c *gin.Context, tasksId string, processId string) (err error
 
 	return nil
 
+}
+
+func UpdateTasksByTaskId(c *gin.Context, tasksId string, tasks models.UpdateTasks) error {
+	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
+	defer cancel()
+
+	// Convert the string task ID to an ObjectID
+	id, err := primitive.ObjectIDFromHex(tasksId)
+	if err != nil {
+		return err
+	}
+
+	filter := bson.M{"_id": id}
+	update := bson.M{"$set": tasks}
+
+	result, err := configs.GetCollection(mongoClient, TASKS_COLLECTION).UpdateOne(ctx, filter, update)
+	if err != nil {
+		return err
+	}
+
+	if result.ModifiedCount == 0 {
+		return errors.New("task not found")
+	}
+
+	return nil
 }
