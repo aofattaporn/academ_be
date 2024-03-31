@@ -19,8 +19,8 @@ type Tasks struct {
 	TasksName string             `bson:"tasksName" json:"tasksName"`
 	ProcessId string             `bson:"processId" json:"processId"`
 	Assignee  string             `bson:"assignee" json:"assignee"`
-	StartDate time.Time          `bson:"startDate" json:"startDate"`
-	DueDate   time.Time          `bson:"dueDate" json:"dueDate"`
+	StartDate *time.Time         `bson:"startDate" json:"startDate"`
+	DueDate   *time.Time         `bson:"dueDate" json:"dueDate"`
 }
 
 type UpdateTasks struct {
@@ -28,8 +28,8 @@ type UpdateTasks struct {
 	TasksName string             `bson:"tasksName" json:"tasksName"`
 	ProcessId string             `bson:"processId" json:"processId"`
 	Assignee  string             `bson:"assignee" json:"assignee"`
-	StartDate time.Time          `bson:"startDate" json:"startDate"`
-	DueDate   time.Time          `bson:"dueDate" json:"dueDate"`
+	StartDate *time.Time         `bson:"startDate" json:"startDate"`
+	DueDate   *time.Time         `bson:"dueDate" json:"dueDate"`
 }
 
 type CreateTasks struct {

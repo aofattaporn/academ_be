@@ -3,7 +3,6 @@ package handlers
 import (
 	"academ_be/models"
 	"academ_be/services"
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -139,24 +138,28 @@ func UpdateTasks(c *gin.Context) {
 		handleBussinessError(c, "Can't to find your Tasks ID")
 	}
 
-	fmt.Println("zzzz")
-
-	var updatTasks models.UpdateTasks
-	if err := c.BindJSON(&updatTasks); err != nil {
+	var updateTasks models.UpdateTasks
+	if err := c.BindJSON(&updateTasks); err != nil {
 		handleBussinessError(c, err.Error())
 		return
 	}
-	fmt.Println(&updatTasks)
-	fmt.Println("============")
 
-	err := services.UpdateTasksByTaskId(c, tasksId, updatTasks)
+	if updateTasks.StartDate != nil && updateTasks.StartDate.IsZero() {
+		updateTasks.StartDate = nil
+	}
+
+	if updateTasks.DueDate != nil && updateTasks.DueDate.IsZero() {
+		updateTasks.DueDate = nil
+	}
+
+	err := services.UpdateTasksByTaskId(c, tasksId, updateTasks)
 	if err != nil {
 		handleTechnicalError(c, err.Error())
 		return
 	}
 
 	// Return success response
-	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_TASKS_SUCCESS, &updatTasks)
+	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_TASKS_SUCCESS, &updateTasks)
 
 }
 
