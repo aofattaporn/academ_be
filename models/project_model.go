@@ -65,9 +65,15 @@ type Member struct {
 }
 
 type Role struct {
-	RoleId       primitive.ObjectID `bson:"roleId"`
-	RoleName     string             `bson:"roleName"`
-	PermissionId primitive.ObjectID `bson:"permissionsId"`
+	RoleId       primitive.ObjectID `bson:"roleId" json:"roleId"`
+	RoleName     string             `bson:"roleName" json:"roleName"`
+	PermissionId primitive.ObjectID `bson:"permissionsId" json:"permissionId"`
+}
+
+type RoleAndPermission struct {
+	RoleId     primitive.ObjectID `bson:"roleId" json:"roleId"`
+	RoleName   string             `bson:"roleName" json:"roleName"`
+	Permission Permission         `bson:"permissionsId" json:"permission"`
 }
 
 type Invite struct {

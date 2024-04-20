@@ -8,17 +8,17 @@ import "go.mongodb.org/mongo-driver/bson/primitive"
 // ----------------------------------------------------------
 
 type Permission struct {
-	Id      primitive.ObjectID `bson:"_id,omitempty"`
-	Members MembersPermission  `bson:"members"`
-	Project ProjectPermission  `bson:"project"`
-	Task    TaskPermission     `bson:"task"`
-	Role    RolePermission     `bson:"role"`
+	Id      primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	Members MembersPermission  `bson:"members" json:"members"`
+	Project ProjectPermission  `bson:"project" json:"project"`
+	Task    TaskPermission     `bson:"task" json:"task"`
+	Role    RolePermission     `bson:"role" json:"role"`
 }
 
 type MembersPermission struct {
-	AddRole bool `bson:"addRole"`
-	Invite  bool `bson:"invite"`
-	Remove  bool `bson:"remove"`
+	AddRole bool `bson:"addRole" json:"addRole"`
+	Invite  bool `bson:"invite" json:"invite"`
+	Remove  bool `bson:"remove" json:"remove"`
 }
 
 type ProjectPermission struct {
