@@ -273,7 +273,7 @@ func UpdateProjectDetails(c *gin.Context) {
 		return
 	}
 
-	handleSuccess(c, http.StatusCreated, SUCCESS, GET_MY_PROJECT_SUCCESS, projectDetails)
+	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_PROJECT_SUCCESS, projectDetails)
 
 }
 
@@ -301,9 +301,64 @@ func GetProjectRoleAndPermissions(c *gin.Context) {
 		}
 
 		roleAndPermission := models.RoleAndPermission{
-			RoleId:     role.RoleId,   // Keyed fields
-			RoleName:   role.RoleName, // Keyed fields
-			Permission: *temp,         // Keyed fields
+			RoleId:     role.RoleId,
+			RoleName:   role.RoleName,
+			Permission: *temp,
+		}
+
+		roleAndPermissions = append(roleAndPermissions, roleAndPermission)
+
+	}
+
+	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_PROJECT_SUCCESS, roleAndPermissions)
+}
+
+func CreateProjectRoleAndPermissions(c *gin.Context) {
+
+	projectId := c.Param("projectsId")
+	if projectId == "" {
+		handleBussinessError(c, "Can't to find your Tasks ID")
+	}
+
+	var createProject models.CreateRole
+	if err := c.BindJSON(&createProject); err != nil {
+		handleBussinessError(c, err.Error())
+		return
+	}
+
+	newId := primitive.NewObjectID()
+	memberPermissionId := setUpOwnerPermission(c, FLAG_DEFAULT_MEMBER)
+
+	newRoles := models.Role{
+		RoleId: newId, RoleName: createProject.NewRole, PermissionId: memberPermissionId,
+	}
+
+	err := services.CreateNewRole(c, projectId, newRoles)
+	if err != nil {
+		handleTechnicalError(c, err.Error())
+		return
+	}
+
+	// Retrieve the project by ID
+	project, err := services.GetProjectById(c, projectId)
+	if err != nil {
+		handleTechnicalError(c, err.Error())
+		return
+	}
+
+	var roleAndPermissions []models.RoleAndPermission
+
+	for _, role := range project.Roles {
+		temp, err := services.GetPermission(c, role.PermissionId)
+		if err != nil {
+			handleTechnicalError(c, err.Error())
+			return
+		}
+
+		roleAndPermission := models.RoleAndPermission{
+			RoleId:     role.RoleId,
+			RoleName:   role.RoleName,
+			Permission: *temp,
 		}
 
 		roleAndPermissions = append(roleAndPermissions, roleAndPermission)

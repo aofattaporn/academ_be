@@ -1,6 +1,8 @@
 package models
 
-import "go.mongodb.org/mongo-driver/bson/primitive"
+import (
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
 
 // *********** For Permissions Collections ***************
 
@@ -37,4 +39,8 @@ type RolePermission struct {
 	AddNew bool `bson:"addNew"`
 	Edit   bool `bson:"edit"`
 	Delete bool `bson:"delete"`
+}
+
+type CreateRole struct {
+	NewRole string `bson:"newRole" json:"newRole"`
 }
