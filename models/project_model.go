@@ -39,6 +39,14 @@ type ProjectInfo struct {
 	Views          []string           `bson:"views"  json:"views"`
 }
 
+type ProjectDetails struct {
+	ProjectId        primitive.ObjectID `bson:"_id,omitempty" json:"projectId"`
+	ProjectProfile   ProjectProfile     `bson:"projectProfile" json:"projectProfile"`
+	Views            []string           `bson:"views" json:"views"`
+	ProjectStartDate time.Time          `bson:"projectStartDate" json:"startDate"`
+	ProjectEndDate   time.Time          `bson:"projectEndDate" json:"dueDate"`
+}
+
 type ProjectProfile struct {
 	ProjectName string `bson:"projectName" json:"projectName"`
 	AvatarColor string `bson:"avatarColor" json:"avatarColor"`

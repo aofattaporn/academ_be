@@ -19,11 +19,11 @@ import (
 // @accept json
 // @produce json
 // @response 200 {string} string "OK"
-// @router /api/v1/projects/:projects_id [get]
+// @router /api/v1/projects/:projectsId [get]
 func GetProjectById(c *gin.Context) {
 	// Extract the user ID from the request context
 	userID := c.MustGet(USER_ID).(string)
-	projectID := c.Param("projects_id")
+	projectID := c.Param("projectsId")
 
 	// Retrieve the project by ID
 	project, err := services.GetProjectById(c, projectID)
@@ -216,4 +216,40 @@ func getRandomColor() string {
 	random := rand.New(source)
 	randomIndex := random.Intn(len(DEFULT_COLORS))
 	return DEFULT_COLORS[randomIndex]
+}
+
+func GetProjectDetails(c *gin.Context) {
+
+	projectId := c.Param("projectsId")
+	if projectId == "" {
+		handleBussinessError(c, "Can't to find your Tasks ID")
+	}
+
+	// Retrieve the project by ID
+	projectDetails, err := services.GetProjectDetails(c, projectId)
+	if err != nil {
+		handleTechnicalError(c, err.Error())
+		return
+	}
+
+	handleSuccess(c, http.StatusCreated, SUCCESS, GET_MY_PROJECT_SUCCESS, projectDetails)
+
+}
+
+func UpdateProjectDetails(c *gin.Context) {
+
+	projectId := c.Param("projectsId")
+	if projectId == "" {
+		handleBussinessError(c, "Can't to find your Tasks ID")
+	}
+
+	// Retrieve the project by ID
+	projectDetails, err := services.GetProjectDetails(c, projectId)
+	if err != nil {
+		handleTechnicalError(c, err.Error())
+		return
+	}
+
+	handleSuccess(c, http.StatusCreated, SUCCESS, GET_MY_PROJECT_SUCCESS, projectDetails)
+
 }
