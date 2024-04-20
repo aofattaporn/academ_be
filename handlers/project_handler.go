@@ -367,3 +367,56 @@ func CreateProjectRoleAndPermissions(c *gin.Context) {
 
 	handleSuccess(c, http.StatusCreated, SUCCESS, GET_MY_PROJECT_SUCCESS, roleAndPermissions)
 }
+
+func UpdateRoleName(c *gin.Context) {
+
+	projectId := c.Param("projectsId")
+	if projectId == "" {
+		handleBussinessError(c, "Can't to find your Tasks ID")
+	}
+
+	var role models.CreateRole
+	if err := c.BindJSON(&role); err != nil {
+		handleBussinessError(c, err.Error())
+		return
+	}
+
+	roleId := c.Param("roleId")
+	if projectId == "" {
+		handleBussinessError(c, "Can't to find your Role ID")
+	}
+
+	err := services.UpdateRoleName(c, projectId, roleId, role.NewRole)
+	if err != nil {
+		handleTechnicalError(c, err.Error())
+		return
+	}
+
+	// Retrieve the project by ID
+	project, err := services.GetProjectById(c, projectId)
+	if err != nil {
+		handleTechnicalError(c, err.Error())
+		return
+	}
+
+	var roleAndPermissions []models.RoleAndPermission
+
+	for _, role := range project.Roles {
+		temp, err := services.GetPermission(c, role.PermissionId)
+		if err != nil {
+			handleTechnicalError(c, err.Error())
+			return
+		}
+
+		roleAndPermission := models.RoleAndPermission{
+			RoleId:     role.RoleId,
+			RoleName:   role.RoleName,
+			Permission: *temp,
+		}
+
+		roleAndPermissions = append(roleAndPermissions, roleAndPermission)
+
+	}
+
+	handleSuccess(c, http.StatusCreated, SUCCESS, GET_MY_PROJECT_SUCCESS, roleAndPermissions)
+}

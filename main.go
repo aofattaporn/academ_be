@@ -66,7 +66,7 @@ func setupRouter() *gin.Engine {
 			projects.POST("/:projectsId/roleAndPermission", handlers.CreateProjectRoleAndPermissions)
 
 			// TODO: INPROGRESS
-			// projects.PUT("/:projectsId/roles/:roleId", handlers.GetAllMyProjects)
+			projects.PUT("/:projectsId/roles/:roleId", handlers.UpdateRoleName)
 			// projects.DELETE("/:projectsId/roles/:roleId", handlers.GetAllMyProjects)
 			// projects.PUT("/:projectsId/roles/:roleId/permissions", handlers.GetAllMyProjects)
 			// projects.GET("/:projectsId/members", handlers.GetAllMyProjects)

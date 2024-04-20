@@ -65,3 +65,31 @@ func CreateNewRole(c *gin.Context, projectId string, newRole models.Role) error 
 
 	return nil
 }
+
+func UpdateRoleName(c *gin.Context, projectId string, roleId string, roleName string) error {
+	ctx, cancel := context.WithTimeout(c, 5*time.Second)
+	defer cancel()
+
+	objID, err := primitive.ObjectIDFromHex(projectId)
+	if err != nil {
+		return fmt.Errorf("invalid project ID: %v", err)
+	}
+
+	roleObjID, err := primitive.ObjectIDFromHex(roleId)
+	if err != nil {
+		return fmt.Errorf("invalid role ID: %v", err)
+	}
+
+	filter := bson.M{"_id": objID, "roles.roleId": roleObjID}
+	update := bson.M{"$set": bson.M{"roles.$.roleName": roleName}}
+
+	_, err = configs.GetCollection(mongoClient, PROJECT_COLLECTION).UpdateOne(ctx, filter, update)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return fmt.Errorf("project or role not found")
+		}
+		return fmt.Errorf("error updating role name: %v", err)
+	}
+
+	return nil
+}
