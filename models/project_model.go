@@ -14,10 +14,10 @@ import (
 type Project struct {
 	ProjectId        primitive.ObjectID `bson:"_id,omitempty"`
 	ProjectProfile   ProjectProfile     `bson:"projectProfile"`
-	ProjectStartDate time.Time          `bson:"projectStartDate"`
-	ProjectEndDate   time.Time          `bson:"projectEndDate"`
-	CreatedAt        time.Time          `bson:"createdAt"`
-	UpdatedAt        time.Time          `bson:"updatedAt"`
+	ProjectStartDate *time.Time         `bson:"projectStartDate"`
+	ProjectEndDate   *time.Time         `bson:"projectEndDate"`
+	CreatedAt        *time.Time         `bson:"createdAt"`
+	UpdatedAt        *time.Time         `bson:"updatedAt"`
 	Process          []Process          `bson:"process"`
 	Members          []Member           `bson:"members"`
 	Views            []string           `bson:"views"`
@@ -43,8 +43,8 @@ type ProjectDetails struct {
 	ProjectId        primitive.ObjectID `bson:"_id,omitempty" json:"projectId"`
 	ProjectProfile   ProjectProfile     `bson:"projectProfile" json:"projectProfile"`
 	Views            []string           `bson:"views" json:"views"`
-	ProjectStartDate time.Time          `bson:"projectStartDate" json:"startDate"`
-	ProjectEndDate   time.Time          `bson:"projectEndDate" json:"dueDate"`
+	ProjectStartDate *time.Time         `bson:"projectStartDate" json:"startDate"`
+	ProjectEndDate   *time.Time         `bson:"projectEndDate" json:"dueDate"`
 }
 
 type ProjectProfile struct {
@@ -81,9 +81,9 @@ type Invite struct {
 // ----------------------------------------------------------
 
 type CreateProject struct {
-	ProjectName    string    `bson:"projectName"`
-	ProjectEndDate time.Time `bson:"projectEndDate"`
-	Views          []string  `bson:"views"`
+	ProjectName    string     `bson:"projectName"`
+	ProjectEndDate *time.Time `bson:"projectEndDate"`
+	Views          []string   `bson:"views"`
 }
 
 type CreateInvite struct {
@@ -98,6 +98,6 @@ type MyProject struct {
 	ProjectId        primitive.ObjectID `bson:"_id,omitempty" json:"projectId"`
 	ProjectProfile   ProjectProfile     `bson:"projectProfile" json:"projectProfile"`
 	Members          []Member           `bson:"members" json:"members"`
-	ProjectStartDate time.Time          `bson:"projectStartDate" json:"projectStartDate"`
-	ProjectEndDate   time.Time          `bson:"projectEndDate" json:"projectEndDate"`
+	ProjectStartDate *time.Time         `bson:"projectStartDate" json:"projectStartDate"`
+	ProjectEndDate   *time.Time         `bson:"projectEndDate" json:"projectEndDate"`
 }

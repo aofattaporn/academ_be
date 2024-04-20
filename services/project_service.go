@@ -4,6 +4,7 @@ import (
 	"academ_be/configs"
 	"academ_be/models"
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -93,4 +94,29 @@ func GetProjectDetails(c *gin.Context, projectId string) (projectDetails *models
 	}
 
 	return projectDetails, nil
+}
+
+func UpdateProjectDetails(c *gin.Context, projectId string, projectUpdate models.ProjectDetails) (err error) {
+	ctx, cancel := context.WithTimeout(c, 5*time.Second)
+	defer cancel()
+
+	// Convert the string task ID to an ObjectID
+	id, err := primitive.ObjectIDFromHex(projectId)
+	if err != nil {
+		return err
+	}
+
+	filter := bson.M{"_id": id}
+	update := bson.M{"$set": projectUpdate}
+
+	result, err := configs.GetCollection(mongoClient, PROJECT_COLLECTION).UpdateOne(ctx, filter, update)
+	if err != nil {
+		return err
+	}
+
+	if result.ModifiedCount == 0 {
+		return errors.New("project not found")
+	}
+
+	return nil
 }

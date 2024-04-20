@@ -127,6 +127,7 @@ func CreateProject(c *gin.Context) {
 	members := []models.Member{
 		{UserId: userId, UserName: userName, RoleId: ownerId},
 	}
+	now := time.Now()
 
 	// Create a new project instance
 	projectId := primitive.NewObjectID()
@@ -136,12 +137,12 @@ func CreateProject(c *gin.Context) {
 			ProjectName: createProject.ProjectName,
 			AvatarColor: getRandomColor(),
 		},
-		ProjectStartDate: time.Now(),
+		ProjectStartDate: &now,
 		ProjectEndDate:   createProject.ProjectEndDate,
 		Views:            createProject.Views,
 		Invite:           []models.Invite{},
-		CreatedAt:        time.Now(),
-		UpdatedAt:        time.Now(),
+		CreatedAt:        &now,
+		UpdatedAt:        &now,
 		Process:          processes,
 		Members:          members,
 		Roles:            roles,
@@ -241,6 +242,28 @@ func UpdateProjectDetails(c *gin.Context) {
 	projectId := c.Param("projectsId")
 	if projectId == "" {
 		handleBussinessError(c, "Can't to find your Tasks ID")
+	}
+
+	// update-project
+
+	var projectUpdate models.ProjectDetails
+	if err := c.BindJSON(&projectUpdate); err != nil {
+		handleBussinessError(c, err.Error())
+		return
+	}
+
+	if projectUpdate.ProjectStartDate != nil && projectUpdate.ProjectStartDate.IsZero() {
+		projectUpdate.ProjectStartDate = nil
+	}
+
+	if projectUpdate.ProjectEndDate != nil && projectUpdate.ProjectEndDate.IsZero() {
+		projectUpdate.ProjectEndDate = nil
+	}
+
+	err := services.UpdateProjectDetails(c, projectId, projectUpdate)
+	if err != nil {
+		handleTechnicalError(c, err.Error())
+		return
 	}
 
 	// Retrieve the project by ID
