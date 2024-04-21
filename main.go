@@ -42,7 +42,6 @@ func setupRouter() *gin.Engine {
 
 	// Middlewares
 	router.Use(middlewares.CORSMiddleware())
-	router.Use(middlewares.ErrorHandler())
 
 	v1 := router.Group("/api/v1")
 	{

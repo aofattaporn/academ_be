@@ -168,12 +168,13 @@ func CreateProject(c *gin.Context) {
 
 func setUpProcesses() []models.Process {
 	processStr := []string{PROCESS_DEFAULT_TODO, PROCESS_DEFAULT_IN_PROGRESS, PROCESS_DEFAULT_DONE}
+	processColor := []string{"#C2C2C2", "#F9E116", "#72C554"}
 	processes := make([]models.Process, len(processStr))
 	for i, v := range processStr {
 		processes[i] = models.Process{
 			ProcessId:    primitive.NewObjectID(),
 			ProcessName:  v,
-			ProcessColor: getRandomColor(),
+			ProcessColor: processColor[i],
 		}
 	}
 	return processes
@@ -267,13 +268,46 @@ func UpdateProjectDetails(c *gin.Context) {
 	}
 
 	// Retrieve the project by ID
-	projectDetails, err := services.GetProjectDetails(c, projectId)
+	project, err := services.GetProjectById(c, projectId)
 	if err != nil {
 		handleTechnicalError(c, err.Error())
 		return
 	}
 
-	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_PROJECT_SUCCESS, projectDetails)
+	// Extract the user_id from the request parameters
+	userID := c.MustGet(USER_ID).(string)
+
+	// Find the role ID corresponding to the user
+	var roleID primitive.ObjectID
+	for _, member := range project.Members {
+		if member.UserId == userID {
+			roleID = member.RoleId
+			break
+		}
+	}
+
+	// Find the permission ID corresponding to the role
+	var permissionID primitive.ObjectID
+	for _, role := range project.Roles {
+		if role.RoleId == roleID {
+			permissionID = role.PermissionId
+			break
+		}
+	}
+
+	// Retrieve the permission by ID
+	permission, err := services.GetPermission(c, permissionID)
+	if err != nil {
+		handleTechnicalError(c, err.Error())
+		return
+	}
+
+	projectInfo := models.ProjectInfoPermission{
+		ProjectInfo:    *project,
+		TaskPermission: permission.Task,
+	}
+
+	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_PROJECT_SUCCESS, projectInfo)
 
 }
 
