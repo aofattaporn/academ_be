@@ -61,6 +61,7 @@ type Process struct {
 type Member struct {
 	UserId   string             `bson:"userId" json:"userId"`
 	UserName string             `bson:"userName" json:"userName"`
+	Emaill   string             `json:"email" json:"email"`
 	RoleId   primitive.ObjectID `bson:"roleId" json:"roleId"`
 }
 
@@ -106,4 +107,10 @@ type MyProject struct {
 	Members          []Member           `bson:"members" json:"members"`
 	ProjectStartDate *time.Time         `bson:"projectStartDate" json:"projectStartDate"`
 	ProjectEndDate   *time.Time         `bson:"projectEndDate" json:"projectEndDate"`
+}
+
+type AllMemberProject struct {
+	Members []Member `bson:"members" json:"members"`
+	Roles   []Role   `bson:"roles" json:"roles"`
+	Invite  []Invite `bson:"invite" json:"invite"`
 }

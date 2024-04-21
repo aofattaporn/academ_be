@@ -106,9 +106,14 @@ func CreateProject(c *gin.Context) {
 		return
 	}
 
-	// Get the user ID from the context
-	userId := c.MustGet("userID").(string)
-	userName := c.GetHeader(USER_NAME)
+	// mapping save data on database
+	userID := c.MustGet(USER_ID).(string)
+	// find user in database from header
+	user, err := services.FindUserOneById(c, userID)
+	if err != nil {
+		handleTechnicalError(c, err.Error())
+		return
+	}
 
 	// Set up roles and permission
 	ownerId := primitive.NewObjectID()
@@ -125,7 +130,7 @@ func CreateProject(c *gin.Context) {
 
 	// Set up members
 	members := []models.Member{
-		{UserId: userId, UserName: userName, RoleId: ownerId},
+		{UserId: userID, UserName: user.FullName, Emaill: user.Email, RoleId: ownerId},
 	}
 	now := time.Now()
 
@@ -149,7 +154,7 @@ func CreateProject(c *gin.Context) {
 	}
 
 	// Create the project in the database
-	err := services.CreateProject(c, &newProject)
+	err = services.CreateProject(c, &newProject)
 	if err != nil {
 		handleTechnicalError(c, err.Error())
 		return
