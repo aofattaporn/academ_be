@@ -144,3 +144,28 @@ func UpdatePermission(c *gin.Context, permissionId string, updatePermission mode
 
 	return nil
 }
+
+func UpdateRoleByMemberID(c *gin.Context, projectId string, memberId string, newRoleId string) error {
+	ctx, cancel := context.WithTimeout(c, 5*time.Second)
+	defer cancel()
+
+	projectID, err := primitive.ObjectIDFromHex(projectId)
+	if err != nil {
+		return err
+	}
+
+	newRoleID, err := primitive.ObjectIDFromHex(newRoleId)
+	if err != nil {
+		return err
+	}
+
+	filter := bson.M{"_id": projectID, "members.userId": memberId}
+	update := bson.M{"$set": bson.M{"members.$.roleId": newRoleID}}
+
+	_, err = configs.GetCollection(mongoClient, PROJECT_COLLECTION).UpdateOne(ctx, filter, update)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
