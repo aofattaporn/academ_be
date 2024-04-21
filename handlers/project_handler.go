@@ -130,7 +130,7 @@ func CreateProject(c *gin.Context) {
 
 	// Set up members
 	members := []models.Member{
-		{UserId: userID, UserName: user.FullName, Emaill: user.Email, RoleId: ownerId},
+		{UserId: userID, UserName: user.FullName, Emaill: user.Email, RoleId: ownerId, AvatarColor: user.AvatarColor},
 	}
 	now := time.Now()
 

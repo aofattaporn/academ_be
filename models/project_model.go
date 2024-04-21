@@ -59,10 +59,11 @@ type Process struct {
 }
 
 type Member struct {
-	UserId   string             `bson:"userId" json:"userId"`
-	UserName string             `bson:"userName" json:"userName"`
-	Emaill   string             `json:"email" json:"email"`
-	RoleId   primitive.ObjectID `bson:"roleId" json:"roleId"`
+	UserId      string             `bson:"userId" json:"userId"`
+	UserName    string             `bson:"userName" json:"userName"`
+	Emaill      string             `json:"email" json:"email"`
+	RoleId      primitive.ObjectID `bson:"roleId" json:"roleId"`
+	AvatarColor string             `bson:"avatarColor" json:"avatarColor"`
 }
 
 type Role struct {
