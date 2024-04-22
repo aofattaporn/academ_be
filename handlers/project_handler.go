@@ -145,7 +145,7 @@ func CreateProject(c *gin.Context) {
 		ProjectStartDate: &now,
 		ProjectEndDate:   createProject.ProjectEndDate,
 		Views:            createProject.Views,
-		Invite:           []models.Invite{},
+		Invites:          []models.Invite{},
 		CreatedAt:        &now,
 		UpdatedAt:        &now,
 		Process:          processes,

@@ -22,7 +22,7 @@ type Project struct {
 	Members          []Member           `bson:"members"`
 	Views            []string           `bson:"views"`
 	Roles            []Role             `bson:"roles"`
-	Invite           []Invite           `bson:"invite"`
+	Invites          []Invite           `bson:"invites"  json:"invites"`
 }
 
 type ProjectInfoPermission struct {
@@ -37,6 +37,7 @@ type ProjectInfo struct {
 	Members        []Member           `bson:"members"  json:"members"`
 	Roles          []Role             `bson:"roles"  json:"roles"`
 	Views          []string           `bson:"views"  json:"views"`
+	Invites        []Invite           `bson:"invites"  json:"invites"`
 }
 
 type ProjectDetails struct {
@@ -79,14 +80,13 @@ type RoleAndPermission struct {
 }
 
 type Invite struct {
-	InviteRole  string    `bson:"inviteRole" json:"inviteRole"`
-	InviteDate  time.Time `bson:"inviteDate" json:"inviteDate"`
-	InviteEmail string    `bson:"inviteEmail" json:"inviteEmail"`
-	Token       string    `bson:"token" json:"token" `
+	InviteRoleId string    `bson:"inviteRoleId" json:"inviteRoleId"`
+	InviteDate   time.Time `bson:"inviteDate" json:"inviteDate"`
+	InviteEmail  string    `bson:"inviteEmail" json:"inviteEmail"`
+	Token        string    `bson:"token" json:"token" `
 }
 
 type InviteReq struct {
-	InviteBy     string    `bson:"inviteBy" json:"inviteBy"`
 	InviteRoleId string    `bson:"inviteRoleId" json:"inviteRoleId"`
 	InviteDate   time.Time `bson:"inviteDate" json:"inviteDate"`
 	InviteEmail  string    `bson:"inviteEmail" json:"inviteEmail"`
@@ -120,5 +120,5 @@ type MyProject struct {
 type AllMemberProject struct {
 	Members []Member `bson:"members" json:"members"`
 	Roles   []Role   `bson:"roles" json:"roles"`
-	Invite  []Invite `bson:"invite" json:"invite"`
+	Invites []Invite `bson:"invites"  json:"invites"`
 }

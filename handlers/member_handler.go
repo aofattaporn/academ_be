@@ -22,7 +22,7 @@ func getProjectMembers(c *gin.Context, projectId string) (*models.AllMemberProje
 	return &models.AllMemberProject{
 		Members: project.Members,
 		Roles:   project.Roles,
-		Invite:  []models.Invite{},
+		Invites: project.Invites,
 	}, nil
 }
 
@@ -92,28 +92,47 @@ func InviteNewMember(c *gin.Context) {
 
 	invitationToken := generateInvitationToken()
 
+	// Retrieve the project by ID
+	project, err := services.GetProjectById(c, projectId)
+	if err != nil {
+		handleTechnicalError(c, err.Error())
+		return
+	}
+
 	// Send invitation email
-	err := sendInvite(inviteReq.InviteEmail, "ProjectName", inviteReq.InviteBy, invitationToken)
+	err = sendInvite(inviteReq.InviteEmail, project.ProjectProfile.ProjectName, invitationToken)
 	if err != nil {
 		handleTechnicalError(c, err.Error())
 		return
 	}
 
 	var invite = models.Invite{
-		InviteRole:  inviteReq.InviteRoleId,
-		InviteDate:  inviteReq.InviteDate,
-		InviteEmail: inviteReq.InviteEmail,
-		Token:       invitationToken,
+		InviteRoleId: inviteReq.InviteRoleId,
+		InviteDate:   inviteReq.InviteDate,
+		InviteEmail:  inviteReq.InviteEmail,
+		Token:        invitationToken,
 	}
 
-	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_PROJECT_SUCCESS, invite)
+	err = services.CreateInvitation(c, projectId, invite)
+	if err != nil {
+		handleTechnicalError(c, err.Error())
+		return
+	}
+
+	memberSetting, err := getProjectMembers(c, projectId)
+	if err != nil {
+		handleTechnicalError(c, err.Error())
+		return
+	}
+
+	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_PROJECT_SUCCESS, memberSetting)
 }
 
 func generateInvitationToken() string {
 	return uuid.New().String()
 }
 
-func sendInvite(email, projectName, inviteBy, token string) error {
+func sendInvite(email, projectName, token string) error {
 
 	// Sender data.
 	from := "aofattapon321@gmail.com"
@@ -142,12 +161,10 @@ func sendInvite(email, projectName, inviteBy, token string) error {
 	t.Execute(&body, struct {
 		Name        string
 		ProjectName string
-		InviteBy    string
 		AcceptLink  string
 	}{
 		Name:        email,
 		ProjectName: projectName,
-		InviteBy:    inviteBy,
 		AcceptLink:  "http://localhost:5173/join-project/?token=" + token,
 	})
 

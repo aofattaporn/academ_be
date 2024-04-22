@@ -132,7 +132,7 @@ func CreateInvitation(c *gin.Context, projectId string, invite models.Invite) (e
 	}
 
 	filter := bson.M{"_id": objID}
-	update := bson.M{"$push": bson.M{"invite": invite}}
+	update := bson.M{"$push": bson.M{"invites": invite}}
 
 	// Perform the update on the PROJECT_COLLECTION
 	_, err = configs.GetCollection(mongoClient, PROJECT_COLLECTION).UpdateOne(ctx, filter, update)
