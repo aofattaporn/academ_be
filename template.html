@@ -1,0 +1,17 @@
+<!-- template.html -->
+<!doctype html>
+<html>
+  <body>
+    <h3>Dear {{.Name}},</h3>
+    <p>You have been invited to join our project.</p>
+    <p>Project Details:</p>
+    <ul>
+      <li>Name: {{.ProjectName}}</li>
+      <li>Creator: {{.InviteBy}}</li>
+    </ul>
+    <p>
+      Please click <a href="{{.AcceptLink}}">here</a> to accept the invitation.
+    </p>
+    <p>We hope to see you onboard!</p>
+  </body>
+</html>

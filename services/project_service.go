@@ -120,3 +120,29 @@ func UpdateProjectDetails(c *gin.Context, projectId string, projectUpdate models
 
 	return nil
 }
+
+func CreateInvitation(c *gin.Context, projectId string, invite models.Invite) (err error) {
+	ctx, cancel := context.WithTimeout(c, 5*time.Second)
+	defer cancel()
+
+	// Convert projectId to ObjectID
+	objID, err := primitive.ObjectIDFromHex(projectId)
+	if err != nil {
+		return fmt.Errorf("invalid project ID: %v", err)
+	}
+
+	filter := bson.M{"_id": objID}
+	update := bson.M{"$push": bson.M{"invite": invite}}
+
+	// Perform the update on the PROJECT_COLLECTION
+	_, err = configs.GetCollection(mongoClient, PROJECT_COLLECTION).UpdateOne(ctx, filter, update)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return fmt.Errorf("project not found")
+		}
+		return fmt.Errorf("error updating project: %v", err)
+	}
+
+	return nil
+
+}
