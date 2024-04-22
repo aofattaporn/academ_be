@@ -146,3 +146,33 @@ func CreateInvitation(c *gin.Context, projectId string, invite models.Invite) (e
 	return nil
 
 }
+
+func DeleteInvitation(c *gin.Context, projectId string, inviteId string) (err error) {
+	ctx, cancel := context.WithTimeout(c, 5*time.Second)
+	defer cancel()
+
+	objID, err := primitive.ObjectIDFromHex(projectId)
+	if err != nil {
+		return fmt.Errorf("invalid project ID: %v", err)
+	}
+
+	inviteID, err := primitive.ObjectIDFromHex(inviteId)
+	if err != nil {
+		return fmt.Errorf("invalid project ID: %v", err)
+	}
+
+	filter := bson.M{"_id": objID}
+	update := bson.M{"$pull": bson.M{"invites": bson.M{"inviteId": inviteID}}}
+
+	// Perform the update on the PROJECT_COLLECTION
+	_, err = configs.GetCollection(mongoClient, PROJECT_COLLECTION).UpdateOne(ctx, filter, update)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return fmt.Errorf("project not found")
+		}
+		return fmt.Errorf("error updating project: %v", err)
+	}
+
+	return nil
+
+}

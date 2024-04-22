@@ -80,10 +80,11 @@ type RoleAndPermission struct {
 }
 
 type Invite struct {
-	InviteRoleId string    `bson:"inviteRoleId" json:"inviteRoleId"`
-	InviteDate   time.Time `bson:"inviteDate" json:"inviteDate"`
-	InviteEmail  string    `bson:"inviteEmail" json:"inviteEmail"`
-	Token        string    `bson:"token" json:"token" `
+	InviteId     primitive.ObjectID `bson:"inviteId" json:"inviteId"`
+	InviteRoleId string             `bson:"inviteRoleId" json:"inviteRoleId"`
+	InviteDate   time.Time          `bson:"inviteDate" json:"inviteDate"`
+	InviteEmail  string             `bson:"inviteEmail" json:"inviteEmail"`
+	Token        string             `bson:"token" json:"token" `
 }
 
 type InviteReq struct {

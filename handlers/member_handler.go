@@ -11,6 +11,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func getProjectMembers(c *gin.Context, projectId string) (*models.AllMemberProject, error) {
@@ -106,7 +107,9 @@ func InviteNewMember(c *gin.Context) {
 		return
 	}
 
+	inviteId := primitive.NewObjectID()
 	var invite = models.Invite{
+		InviteId:     inviteId,
 		InviteRoleId: inviteReq.InviteRoleId,
 		InviteDate:   inviteReq.InviteDate,
 		InviteEmail:  inviteReq.InviteEmail,
@@ -175,4 +178,34 @@ func sendInvite(email, projectName, token string) error {
 	}
 
 	return nil
+}
+
+func DeleteInviteMember(c *gin.Context) {
+
+	projectId := c.Param("projectsId")
+	if projectId == "" {
+		handleBussinessError(c, "Can't find your Project ID")
+		return
+	}
+
+	inviteId := c.Param("inviteId")
+	if projectId == "" {
+		handleBussinessError(c, "Can't find your Project ID")
+		return
+	}
+
+	err := services.DeleteInvitation(c, projectId, inviteId)
+	if err != nil {
+		handleTechnicalError(c, err.Error())
+		return
+	}
+
+	memberSetting, err := getProjectMembers(c, projectId)
+	if err != nil {
+		handleTechnicalError(c, err.Error())
+		return
+	}
+
+	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_PROJECT_SUCCESS, memberSetting)
+
 }

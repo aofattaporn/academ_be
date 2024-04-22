@@ -59,6 +59,7 @@ func setupRouter() *gin.Engine {
 		{
 
 			projects.POST("/:projectsId/invites", handlers.InviteNewMember)
+			projects.DELETE("/:projectsId/invites/:inviteId", handlers.DeleteInviteMember)
 			projects.GET("/:projectsId/details", handlers.GetProjectDetails)
 			projects.PUT("/:projectsId/details", handlers.UpdateProjectDetails)
 			projects.GET("/:projectsId/roleAndPermission", handlers.GetProjectRoleAndPermissions)
