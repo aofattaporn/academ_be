@@ -163,8 +163,6 @@ func AcceptInviteMember(c *gin.Context) {
 
 	// Extract the user ID from the request context
 	userID := c.MustGet(USER_ID).(string)
-
-	fmt.Println(userID)
 	user, err := services.FindUserFullInfoOneById(c, userID)
 	if err != nil {
 		handleTechnicalError(c, err.Error())

@@ -70,3 +70,33 @@ func ChangeRoleMember(c *gin.Context) {
 
 	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_PROJECT_SUCCESS, memberSetting)
 }
+
+func RemoveMember(c *gin.Context) {
+
+	projectId := c.Param("projectId")
+	if projectId == "" {
+		handleBussinessError(c, "Can't find your Project ID")
+		return
+	}
+
+	memberId := c.Param("memberId")
+	if memberId == "" {
+		handleBussinessError(c, "Can't find your Project ID")
+		return
+	}
+
+	err := services.RemoveMember(c, projectId, memberId)
+	if err != nil {
+		handleTechnicalError(c, err.Error())
+		return
+	}
+
+	memberSetting, err := getProjectMembers(c, projectId)
+	if err != nil {
+		handleTechnicalError(c, err.Error())
+		return
+	}
+
+	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_PROJECT_SUCCESS, memberSetting)
+
+}

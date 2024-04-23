@@ -136,6 +136,19 @@ func CreateProject(c *gin.Context) {
 	}
 	now := time.Now()
 
+	base_view := []string{"List", "Board", "Calendar", "TimeLine"}
+	filteredViews := make([]string, 0)
+
+	// Add views from projectViews in the order they appear in views
+	for _, view := range base_view {
+		for _, pv := range createProject.Views {
+			if pv == view {
+				filteredViews = append(filteredViews, view)
+				break
+			}
+		}
+	}
+
 	// Create a new project instance
 	projectId := primitive.NewObjectID()
 	newProject := models.Project{
@@ -146,7 +159,7 @@ func CreateProject(c *gin.Context) {
 		},
 		ProjectStartDate: &now,
 		ProjectEndDate:   createProject.ProjectEndDate,
-		Views:            createProject.Views,
+		Views:            filteredViews,
 		Invites:          []models.Invite{},
 		CreatedAt:        &now,
 		UpdatedAt:        &now,
