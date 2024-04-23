@@ -57,33 +57,45 @@ func setupRouter() *gin.Engine {
 
 		projects := v1.Group("/projects")
 		{
-
-			projects.POST("/:projectsId/invites", handlers.InviteNewMember)
-			projects.DELETE("/:projectsId/invites/:inviteId", handlers.DeleteInviteMember)
-			projects.GET("/:projectsId/details", handlers.GetProjectDetails)
-			projects.PUT("/:projectsId/details", handlers.UpdateProjectDetails)
-			projects.GET("/:projectsId/roleAndPermission", handlers.GetProjectRoleAndPermissions)
-			projects.POST("/:projectsId/roleAndPermission", handlers.CreateProjectRoleAndPermissions)
-			projects.PUT("/:projectsId/roles/:roleId", handlers.UpdateRoleName)
-			projects.DELETE("/:projectsId/roles/:roleId", handlers.DeleteRole)
-			projects.PUT("/:projectsId/permissions/:permissionId", handlers.UpdatePermission)
-			projects.GET("/:projectsId/members/:memberId/roles/:roleId", handlers.ChangeRoleMember)
-			projects.GET("/:projectsId/members", handlers.GetProjectMembers)
-			projects.POST("", handlers.CreateProject)
-			projects.GET("/:projectsId", handlers.GetProjectById)
 			projects.GET("/users/id", handlers.GetAllMyProjects)
+			projects.POST("", handlers.CreateProject)
 
+			// Routes related to project details
+			projects.GET("/:projectId", handlers.GetProjectById)
+			projects.GET("/:projectId/details", handlers.GetProjectDetails)
+			projects.PUT("/:projectId/details", handlers.UpdateProjectDetails)
+
+			// Routes related to project invites
+			projects.POST("/:projectId/invites", handlers.InviteNewMember)
+			projects.DELETE("/:projectId/invites/:inviteId", handlers.DeleteInviteMember)
+			projects.GET("/:projectId/invites/token/:token", handlers.AcceptInviteMember)
+
+			// Routes related to project roles and permissions
+			projects.GET("/:projectId/roleAndPermission", handlers.GetProjectRoleAndPermissions)
+			projects.POST("/:projectId/roleAndPermission", handlers.CreateProjectRoleAndPermissions)
+			projects.PUT("/:projectId/roles/:roleId", handlers.UpdateRoleName)
+			projects.DELETE("/:projectId/roles/:roleId", handlers.DeleteRole)
+			projects.PUT("/:projectId/permissions/:permissionId", handlers.UpdatePermission)
+
+			// Routes related to project members
+			projects.GET("/:projectId/members", handlers.GetProjectMembers)
+			projects.GET("/:projectId/members/:memberId/roles/:roleId", handlers.ChangeRoleMember)
 		}
 
 		tasks := v1.Group("/tasks")
 		{
-			tasks.POST("", handlers.CreateTasks)
-			tasks.GET("projects/:projectId", handlers.GetAllTasksByProjectId)
-			tasks.GET("/:tasksId", handlers.GetTasksById)
-			tasks.PUT("/:tasksId/process/:processId", handlers.ChangeProcesss)
-			tasks.PUT("/:tasksId", handlers.UpdateTasks)
-			tasks.DELETE("/:tasksId", handlers.DeleteTasksById)
+			tasks.POST("", handlers.CreateTasks)               // Create a new task
+			tasks.GET("/:taskId", handlers.GetTasksById)       // Get task by ID
+			tasks.PUT("/:taskId", handlers.UpdateTasks)        // Update task by ID
+			tasks.DELETE("/:taskId", handlers.DeleteTasksById) // Delete task by ID
+
+			// Routes related to tasks and projects
+			tasks.GET("projects/:projectId", handlers.GetAllTasksByProjectId) // Get all tasks by project ID
+
+			// Routes related to task processes
+			tasks.PUT("/:taskId/process/:processId", handlers.ChangeProcesss) // Change task process
 		}
+
 	}
 
 	return router

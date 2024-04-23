@@ -79,7 +79,8 @@ func DeleteTasksByTasksId(c *gin.Context, tasksId string) (err error) {
 		return err
 	}
 
-	_, err = configs.GetCollection(mongoClient, TASKS_COLLECTION).DeleteOne(ctx, bson.D{{"_id", objID}})
+	filter := bson.D{{Key: "_id", Value: objID}}
+	_, err = configs.GetCollection(mongoClient, TASKS_COLLECTION).DeleteOne(ctx, filter)
 	if err != nil {
 		return err
 	}
@@ -94,9 +95,9 @@ func ChangeProcesss(c *gin.Context, tasksId string, processId string) (err error
 	defer cancel()
 
 	id, _ := primitive.ObjectIDFromHex(tasksId)
-	filter := bson.D{{"_id", id}}
+	filter := bson.D{{Key: "_id", Value: id}}
 
-	update := bson.D{{"$set", bson.D{{"processId", processId}}}}
+	update := bson.D{{Key: "$set", Value: bson.D{{Key: "processId", Value: processId}}}}
 
 	_, err = configs.GetCollection(mongoClient, TASKS_COLLECTION).UpdateOne(ctx, filter, update)
 	if err != nil {
