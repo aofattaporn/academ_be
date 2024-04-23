@@ -149,30 +149,48 @@ func DeleteInviteMember(c *gin.Context) {
 
 func AcceptInviteMember(c *gin.Context) {
 
-	projectId := c.Param("projectId")
-	if projectId == "" {
-		handleBussinessError(c, "Can't find your Project ID")
-		return
-	}
-
 	token := c.Param("token")
-	if projectId == "" {
+	if token == "" {
 		handleBussinessError(c, "Can't find your Project ID")
 		return
 	}
 
-	err := services.DeleteInvitation(c, projectId, token)
+	projectId, invite, err := services.RemoveProjectInviteFromAccept(c, token)
 	if err != nil {
 		handleTechnicalError(c, err.Error())
 		return
 	}
 
-	memberSetting, err := getProjectMembers(c, projectId)
+	// Extract the user ID from the request context
+	userID := c.MustGet(USER_ID).(string)
+
+	fmt.Println(userID)
+	user, err := services.FindUserFullInfoOneById(c, userID)
 	if err != nil {
 		handleTechnicalError(c, err.Error())
 		return
 	}
 
-	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_PROJECT_SUCCESS, memberSetting)
+	inviteRoleID, err := primitive.ObjectIDFromHex(invite.InviteRoleId)
+	if err != nil {
+		handleTechnicalError(c, err.Error())
+		return
+	}
+
+	newMember := models.Member{
+		UserId:      user.Id,
+		UserName:    user.FullName,
+		Emaill:      user.Email,
+		RoleId:      inviteRoleID,
+		AvatarColor: user.AvatarColor,
+	}
+
+	err = services.AddNewMember(c, *projectId, newMember)
+	if err != nil {
+		handleTechnicalError(c, err.Error())
+		return
+	}
+
+	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_PROJECT_SUCCESS, "success")
 
 }

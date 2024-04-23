@@ -177,29 +177,48 @@ func DeleteInvitation(c *gin.Context, projectId string, inviteId string) (err er
 
 }
 
-func AddNewProjectMember(c *gin.Context, projectId string, token string) (err error) {
+func RemoveProjectInviteFromAccept(c *gin.Context, token string) (*primitive.ObjectID, *models.Invite, error) {
+	ctx, cancel := context.WithTimeout(c, 5*time.Second)
+	defer cancel()
+
+	filter := bson.M{"invites.token": token}
+	update := bson.M{"$pull": bson.M{"invites": bson.M{"token": token}}}
+
+	var project models.Project
+	err := configs.GetCollection(mongoClient, PROJECT_COLLECTION).FindOneAndUpdate(ctx, filter, update).Decode(&project)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, nil, fmt.Errorf("project not found")
+		}
+		return nil, nil, fmt.Errorf("error updating project: %v", err)
+	}
+
+	var projectId *primitive.ObjectID
+	projectId = &project.ProjectId
+	var invite *models.Invite
+	for i, inv := range project.Invites {
+		if inv.Token == token {
+			invite = &project.Invites[i]
+			break
+		}
+	}
+
+	if invite == nil {
+		return nil, nil, fmt.Errorf("invite not found")
+	}
+
+	return projectId, invite, nil
+}
+
+func AddNewMember(c *gin.Context, projectId primitive.ObjectID, member models.Member) (err error) {
 
 	ctx, cancel := context.WithTimeout(c, 5*time.Second)
 	defer cancel()
 
-	projectID, err := primitive.ObjectIDFromHex(projectId)
-	if err != nil {
-		return fmt.Errorf("invalid project ID: %v", err)
-	}
-
-	filter := bson.M{"_id": projectID}
-	update := bson.M{"$pull": bson.M{"invites": bson.M{"token": token}}}
+	filter := bson.M{"_id": projectId}
+	update := bson.M{"$push": bson.M{"members": member}}
 
 	// Perform the update on the PROJECT_COLLECTION
-	_, err = configs.GetCollection(mongoClient, PROJECT_COLLECTION).UpdateOne(ctx, filter, update)
-	if err != nil {
-		if err == mongo.ErrNoDocuments {
-			return fmt.Errorf("project not found")
-		}
-		return fmt.Errorf("error updating project: %v", err)
-	}
-
-	update = bson.M{"$push": bson.M{"members": bson.M{"token": token}}}
 	_, err = configs.GetCollection(mongoClient, PROJECT_COLLECTION).UpdateOne(ctx, filter, update)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {

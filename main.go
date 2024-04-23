@@ -68,7 +68,7 @@ func setupRouter() *gin.Engine {
 			// Routes related to project invites
 			projects.POST("/:projectId/invites", handlers.InviteNewMember)
 			projects.DELETE("/:projectId/invites/:inviteId", handlers.DeleteInviteMember)
-			projects.GET("/:projectId/invites/token/:token", handlers.AcceptInviteMember)
+			projects.GET("/invites/token/:token", handlers.AcceptInviteMember)
 
 			// Routes related to project roles and permissions
 			projects.GET("/:projectId/roleAndPermission", handlers.GetProjectRoleAndPermissions)

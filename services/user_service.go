@@ -39,6 +39,19 @@ func FindUserOneById(c *gin.Context, userID string) (user *models.UserResponse, 
 	return &result, nil
 }
 
+func FindUserFullInfoOneById(c *gin.Context, userID string) (user *models.UserFullInfo, err error) {
+	ctx, cancel := context.WithTimeout(c, 5*time.Second)
+	defer cancel()
+
+	var result models.UserFullInfo
+	err = configs.GetCollection(mongoClient, USER_COLLECTION).FindOne(ctx, bson.M{"_id": userID}).Decode(&result)
+	if err != nil {
+		return nil, err
+	}
+
+	return &result, nil
+}
+
 func FindUserAndCount(c *gin.Context, userID string) (count int64, err error) {
 	ctx, cancel := context.WithTimeout(c, 5*time.Second)
 	defer cancel()

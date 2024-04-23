@@ -18,3 +18,10 @@ type UserResponse struct {
 	FullName    string `json:"fullName,omitempty" validate:"required"`
 	AvatarColor string `bson:"avatarColor" json:"avatarColor"`
 }
+
+type UserFullInfo struct {
+	Id          string `bson:"_id" json:"id,omitempty" json:id`
+	Email       string `json:"email,omitempty" validate:"required"`
+	FullName    string `json:"fullName,omitempty" validate:"required"`
+	AvatarColor string `bson:"avatarColor" json:"avatarColor"`
+}

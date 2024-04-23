@@ -77,7 +77,7 @@ func CreateTasks(c *gin.Context) {
 // @router /api/v1/sign-in [post]
 func GetTasksById(c *gin.Context) {
 
-	tasksId := c.Param("tasksId")
+	tasksId := c.Param("taskId")
 	if tasksId == "" {
 		handleBussinessError(c, "Can't to find your Tasks ID")
 	}
@@ -104,7 +104,7 @@ func GetTasksById(c *gin.Context) {
 // @router /api/v1/sign-in [post]
 func ChangeProcesss(c *gin.Context) {
 
-	tasksId := c.Param("tasksId")
+	tasksId := c.Param("taskId")
 	if tasksId == "" {
 		handleBussinessError(c, "Can't to find your Tasks ID")
 	}
@@ -133,7 +133,7 @@ func ChangeProcesss(c *gin.Context) {
 // @router /api/v1/sign-in [post]
 func UpdateTasks(c *gin.Context) {
 
-	tasksId := c.Param("tasksId")
+	tasksId := c.Param("taskId")
 	if tasksId == "" {
 		handleBussinessError(c, "Can't to find your Tasks ID")
 	}
@@ -174,7 +174,7 @@ func UpdateTasks(c *gin.Context) {
 // @router /api/v1/sign-in [delete]
 func DeleteTasksById(c *gin.Context) {
 
-	tasksId := c.Param("tasksId")
+	tasksId := c.Param("taskId")
 	if tasksId == "" {
 		handleBussinessError(c, "Can't to find your Tasks ID")
 	}
