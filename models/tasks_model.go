@@ -38,3 +38,8 @@ type CreateTasks struct {
 	TasksName string             `bson:"tasksName" json:"tasksName"`
 	ProcessId string             `bson:"processId" json:"processId"`
 }
+
+type AllMyTasks struct {
+	Projects []AllTasksMyProject `bson:"projects" json:"projects"`
+	Tasks    []Tasks             `bson:"tasks" json:"tasks"`
+}

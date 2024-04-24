@@ -146,3 +146,30 @@ func UpdateTasksByTaskId(c *gin.Context, tasksId string, tasks models.UpdateTask
 
 	return nil
 }
+
+func GetTasksByUserId(c *gin.Context, userId string) (projects []models.Tasks, err error) {
+	ctx, cancel := context.WithTimeout(c, 5*time.Second)
+	defer cancel()
+
+	filter := bson.M{"assignee": bson.M{"$elemMatch": bson.M{"userId": userId}}}
+	cursor, err := configs.GetCollection(mongoClient, PROJECT_COLLECTION).Find(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	// Decode projects directly into the result slice
+	if err := cursor.All(ctx, &projects); err != nil {
+		return nil, err
+	}
+
+	if len(projects) == 0 {
+		return []models.Tasks{}, nil
+	}
+
+	return projects, nil
+}

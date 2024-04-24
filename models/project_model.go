@@ -123,3 +123,13 @@ type AllMemberProject struct {
 	Roles   []Role   `bson:"roles" json:"roles"`
 	Invites []Invite `bson:"invites"  json:"invites"`
 }
+
+type AllTasksMyProject struct {
+	ProjectId        primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	ProjectProfile   ProjectProfile     `bson:"projectProfile" json:"projectProfile"`
+	ProjectStartDate *time.Time         `bson:"projectStartDate" json:"projectStartDate"`
+	ProjectEndDate   *time.Time         `bson:"projectEndDate" json:"projectEndDate"`
+	CreatedAt        *time.Time         `bson:"createdAt" json:"createdAt"`
+	UpdatedAt        *time.Time         `bson:"updatedAt" json:"updatedAt"`
+	Process          []Process          `bson:"process" json:"process"`
+}

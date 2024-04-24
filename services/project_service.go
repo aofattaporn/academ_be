@@ -45,22 +45,33 @@ func GetProjectById(c *gin.Context, projectId string) (project *models.ProjectIn
 	return project, err
 }
 
-func DeleteProjectById(c *gin.Context, projectId string) (err error) {
+func GetProjectByUserId(c *gin.Context, userId string) (projects []models.AllTasksMyProject, err error) {
 	ctx, cancel := context.WithTimeout(c, 5*time.Second)
 	defer cancel()
 
-	// Convert projectId string to ObjectId
-	objID, err := primitive.ObjectIDFromHex(projectId)
+	filter := bson.M{"members": bson.M{"$elemMatch": bson.M{"userId": userId}}}
+
+	cursor, err := configs.GetCollection(mongoClient, PROJECT_COLLECTION).Find(ctx, filter)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	_, err = configs.GetCollection(mongoClient, PROJECT_COLLECTION).DeleteOne(ctx, bson.M{"_id": objID})
 	if err != nil {
-		return err
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	// Decode projects directly into the result slice
+	if err := cursor.All(ctx, &projects); err != nil {
+		return nil, err
 	}
 
-	return nil
+	if len(projects) == 0 {
+		return []models.AllTasksMyProject{}, nil
+	}
+
+	return projects, nil
+
 }
 
 func GetProjectsByMemberUserID(c *gin.Context, myUserID string) (projects []models.MyProject, err error) {
@@ -91,6 +102,24 @@ func GetProjectsByMemberUserID(c *gin.Context, myUserID string) (projects []mode
 	}
 
 	return projects, nil
+}
+
+func DeleteProjectById(c *gin.Context, projectId string) (err error) {
+	ctx, cancel := context.WithTimeout(c, 5*time.Second)
+	defer cancel()
+
+	// Convert projectId string to ObjectId
+	objID, err := primitive.ObjectIDFromHex(projectId)
+	if err != nil {
+		return err
+	}
+
+	_, err = configs.GetCollection(mongoClient, PROJECT_COLLECTION).DeleteOne(ctx, bson.M{"_id": objID})
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func GetProjectDetails(c *gin.Context, projectId string) (projectDetails *models.ProjectDetails, err error) {

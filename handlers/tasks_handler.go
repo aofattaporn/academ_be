@@ -189,3 +189,27 @@ func DeleteTasksById(c *gin.Context) {
 	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_TASKS_SUCCESS, nil)
 
 }
+
+func GetAllTasksEachProject(c *gin.Context) {
+
+	var allMytasks models.AllMyTasks
+
+	// getting userID
+	userID := c.MustGet(USER_ID).(string)
+	projects, err := services.GetProjectByUserId(c, userID)
+	if err != nil {
+		handleTechnicalError(c, err.Error())
+		return
+	}
+	allMytasks.Projects = projects
+
+	tasks, err := services.GetTasksByUserId(c, userID)
+	if err != nil {
+		handleTechnicalError(c, err.Error())
+		return
+	}
+	allMytasks.Tasks = tasks
+
+	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_TASKS_SUCCESS, allMytasks)
+
+}
