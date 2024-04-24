@@ -40,3 +40,132 @@ func GetPermission(c *gin.Context, permissionId primitive.ObjectID) (permission 
 
 	return permission, nil
 }
+
+func CreateNewRole(c *gin.Context, projectId string, newRole models.Role) error {
+	ctx, cancel := context.WithTimeout(c, 5*time.Second)
+	defer cancel()
+
+	// Convert projectId to ObjectID
+	objID, err := primitive.ObjectIDFromHex(projectId)
+	if err != nil {
+		return fmt.Errorf("invalid project ID: %v", err)
+	}
+
+	filter := bson.M{"_id": objID}
+	update := bson.M{"$push": bson.M{"roles": newRole}}
+
+	// Perform the update on the PROJECT_COLLECTION
+	_, err = configs.GetCollection(mongoClient, PROJECT_COLLECTION).UpdateOne(ctx, filter, update)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return fmt.Errorf("project not found")
+		}
+		return fmt.Errorf("error updating project: %v", err)
+	}
+
+	return nil
+}
+
+func UpdateRoleName(c *gin.Context, projectId string, roleId string, roleName string) error {
+	ctx, cancel := context.WithTimeout(c, 5*time.Second)
+	defer cancel()
+
+	objID, err := primitive.ObjectIDFromHex(projectId)
+	if err != nil {
+		return fmt.Errorf("invalid project ID: %v", err)
+	}
+
+	roleObjID, err := primitive.ObjectIDFromHex(roleId)
+	if err != nil {
+		return fmt.Errorf("invalid role ID: %v", err)
+	}
+
+	filter := bson.M{"_id": objID, "roles.roleId": roleObjID}
+	update := bson.M{"$set": bson.M{"roles.$.roleName": roleName}}
+
+	_, err = configs.GetCollection(mongoClient, PROJECT_COLLECTION).UpdateOne(ctx, filter, update)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return fmt.Errorf("project or role not found")
+		}
+		return fmt.Errorf("error updating role name: %v", err)
+	}
+
+	return nil
+}
+
+func DeleteRole(c *gin.Context, projectId string, roleId string) error {
+	ctx, cancel := context.WithTimeout(c, 5*time.Second)
+	defer cancel()
+
+	// Convert projectId to ObjectID
+	objID, err := primitive.ObjectIDFromHex(projectId)
+	if err != nil {
+		return fmt.Errorf("invalid project ID: %v", err)
+	}
+
+	// Convert roleId to ObjectID
+	roleObjID, err := primitive.ObjectIDFromHex(roleId)
+	if err != nil {
+		return fmt.Errorf("invalid role ID: %v", err)
+	}
+
+	filter := bson.M{"_id": objID}
+	update := bson.M{"$pull": bson.M{"roles": bson.M{"roleId": roleObjID}}}
+
+	collection := configs.GetCollection(mongoClient, PROJECT_COLLECTION)
+	_, err = collection.UpdateOne(ctx, filter, update)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return fmt.Errorf("project not found")
+		}
+		return fmt.Errorf("error deleting role: %v", err)
+	}
+
+	return nil
+}
+
+func UpdatePermission(c *gin.Context, permissionId string, updatePermission models.Permission) error {
+	ctx, cancel := context.WithTimeout(c, 5*time.Second)
+	defer cancel()
+
+	id, err := primitive.ObjectIDFromHex(permissionId)
+	if err != nil {
+		return err
+	}
+
+	filter := bson.M{"_id": id}
+	update := bson.M{"$set": updatePermission}
+
+	_, err = configs.GetCollection(mongoClient, PERMISSION_COLLECTION).UpdateOne(ctx, filter, update)
+	if err != nil {
+		return fmt.Errorf("error updating document: %v", err)
+	}
+
+	return nil
+}
+
+func UpdateRoleByMemberID(c *gin.Context, projectId string, memberId string, newRoleId string) error {
+	ctx, cancel := context.WithTimeout(c, 5*time.Second)
+	defer cancel()
+
+	projectID, err := primitive.ObjectIDFromHex(projectId)
+	if err != nil {
+		return err
+	}
+
+	newRoleID, err := primitive.ObjectIDFromHex(newRoleId)
+	if err != nil {
+		return err
+	}
+
+	filter := bson.M{"_id": projectID, "members.userId": memberId}
+	update := bson.M{"$set": bson.M{"members.$.roleId": newRoleID}}
+
+	_, err = configs.GetCollection(mongoClient, PROJECT_COLLECTION).UpdateOne(ctx, filter, update)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

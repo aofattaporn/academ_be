@@ -11,6 +11,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+// ?Routes related to project details
+
 // GetProject godoc
 // @summary Health Check
 // @description Health checking for the service
@@ -19,14 +21,14 @@ import (
 // @accept json
 // @produce json
 // @response 200 {string} string "OK"
-// @router /api/v1/projects/:projects_id [get]
+// @router /api/v1/projects/:projectsId [get]
 func GetProjectById(c *gin.Context) {
 	// Extract the user ID from the request context
 	userID := c.MustGet(USER_ID).(string)
-	projectID := c.Param("projects_id")
+	projectId := c.Param("projectId")
 
 	// Retrieve the project by ID
-	project, err := services.GetProjectById(c, projectID)
+	project, err := services.GetProjectById(c, projectId)
 	if err != nil {
 		handleTechnicalError(c, err.Error())
 		return
@@ -106,9 +108,14 @@ func CreateProject(c *gin.Context) {
 		return
 	}
 
-	// Get the user ID from the context
-	userId := c.MustGet("userID").(string)
-	userName := c.GetHeader(USER_NAME)
+	// mapping save data on database
+	userID := c.MustGet(USER_ID).(string)
+	// find user in database from header
+	user, err := services.FindUserOneById(c, userID)
+	if err != nil {
+		handleTechnicalError(c, err.Error())
+		return
+	}
 
 	// Set up roles and permission
 	ownerId := primitive.NewObjectID()
@@ -125,7 +132,21 @@ func CreateProject(c *gin.Context) {
 
 	// Set up members
 	members := []models.Member{
-		{UserId: userId, UserName: userName, RoleId: ownerId},
+		{UserId: userID, UserName: user.FullName, Emaill: user.Email, RoleId: ownerId, AvatarColor: user.AvatarColor},
+	}
+	now := time.Now()
+
+	base_view := []string{"List", "Board", "Calendar", "TimeLine"}
+	filteredViews := make([]string, 0)
+
+	// Add views from projectViews in the order they appear in views
+	for _, view := range base_view {
+		for _, pv := range createProject.Views {
+			if pv == view {
+				filteredViews = append(filteredViews, view)
+				break
+			}
+		}
 	}
 
 	// Create a new project instance
@@ -136,19 +157,19 @@ func CreateProject(c *gin.Context) {
 			ProjectName: createProject.ProjectName,
 			AvatarColor: getRandomColor(),
 		},
-		ProjectStartDate: time.Now(),
+		ProjectStartDate: &now,
 		ProjectEndDate:   createProject.ProjectEndDate,
-		Views:            createProject.Views,
-		Invite:           []models.Invite{},
-		CreatedAt:        time.Now(),
-		UpdatedAt:        time.Now(),
+		Views:            filteredViews,
+		Invites:          []models.Invite{},
+		CreatedAt:        &now,
+		UpdatedAt:        &now,
 		Process:          processes,
 		Members:          members,
 		Roles:            roles,
 	}
 
 	// Create the project in the database
-	err := services.CreateProject(c, &newProject)
+	err = services.CreateProject(c, &newProject)
 	if err != nil {
 		handleTechnicalError(c, err.Error())
 		return
@@ -167,12 +188,13 @@ func CreateProject(c *gin.Context) {
 
 func setUpProcesses() []models.Process {
 	processStr := []string{PROCESS_DEFAULT_TODO, PROCESS_DEFAULT_IN_PROGRESS, PROCESS_DEFAULT_DONE}
+	processColor := []string{"#C2C2C2", "#F9E116", "#72C554"}
 	processes := make([]models.Process, len(processStr))
 	for i, v := range processStr {
 		processes[i] = models.Process{
 			ProcessId:    primitive.NewObjectID(),
 			ProcessName:  v,
-			ProcessColor: getRandomColor(),
+			ProcessColor: processColor[i],
 		}
 	}
 	return processes
@@ -216,4 +238,118 @@ func getRandomColor() string {
 	random := rand.New(source)
 	randomIndex := random.Intn(len(DEFULT_COLORS))
 	return DEFULT_COLORS[randomIndex]
+}
+
+func GetProjectDetails(c *gin.Context) {
+
+	projectId := c.Param("projectId")
+	if projectId == "" {
+		handleBussinessError(c, "Can't to find your Tasks ID")
+	}
+
+	// Retrieve the project by ID
+	projectDetails, err := services.GetProjectDetails(c, projectId)
+	if err != nil {
+		handleTechnicalError(c, err.Error())
+		return
+	}
+
+	handleSuccess(c, http.StatusCreated, SUCCESS, GET_MY_PROJECT_SUCCESS, projectDetails)
+
+}
+
+func UpdateProjectDetails(c *gin.Context) {
+
+	projectId := c.Param("projectId")
+	if projectId == "" {
+		handleBussinessError(c, "Can't to find your Tasks ID")
+	}
+
+	// update-project
+
+	var projectUpdate models.ProjectDetails
+	if err := c.BindJSON(&projectUpdate); err != nil {
+		handleBussinessError(c, err.Error())
+		return
+	}
+
+	if projectUpdate.ProjectStartDate != nil && projectUpdate.ProjectStartDate.IsZero() {
+		projectUpdate.ProjectStartDate = nil
+	}
+
+	if projectUpdate.ProjectEndDate != nil && projectUpdate.ProjectEndDate.IsZero() {
+		projectUpdate.ProjectEndDate = nil
+	}
+
+	err := services.UpdateProjectDetails(c, projectId, projectUpdate)
+	if err != nil {
+		handleTechnicalError(c, err.Error())
+		return
+	}
+
+	// Retrieve the project by ID
+	project, err := services.GetProjectById(c, projectId)
+	if err != nil {
+		handleTechnicalError(c, err.Error())
+		return
+	}
+
+	// Extract the user_id from the request parameters
+	userID := c.MustGet(USER_ID).(string)
+
+	// Find the role ID corresponding to the user
+	var roleID primitive.ObjectID
+	for _, member := range project.Members {
+		if member.UserId == userID {
+			roleID = member.RoleId
+			break
+		}
+	}
+
+	// Find the permission ID corresponding to the role
+	var permissionID primitive.ObjectID
+	for _, role := range project.Roles {
+		if role.RoleId == roleID {
+			permissionID = role.PermissionId
+			break
+		}
+	}
+
+	// Retrieve the permission by ID
+	permission, err := services.GetPermission(c, permissionID)
+	if err != nil {
+		handleTechnicalError(c, err.Error())
+		return
+	}
+
+	projectInfo := models.ProjectInfoPermission{
+		ProjectInfo:    *project,
+		TaskPermission: permission.Task,
+	}
+
+	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_PROJECT_SUCCESS, projectInfo)
+
+}
+
+func DeleteProjectById(c *gin.Context) {
+
+	projectId := c.Param("projectId")
+	if projectId == "" {
+		handleBussinessError(c, "Can't to find your Tasks ID")
+	}
+
+	err := services.DeleteProjectById(c, projectId)
+	if err != nil {
+		handleTechnicalError(c, err.Error())
+		return
+	}
+
+	err = services.DeleteTasksByProjectId(c, projectId)
+	if err != nil {
+		handleTechnicalError(c, err.Error())
+		return
+	}
+
+	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_PROJECT_SUCCESS, nil)
+
 }

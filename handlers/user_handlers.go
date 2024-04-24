@@ -98,11 +98,12 @@ func CreateUserByGoogle(c *gin.Context) {
 		}
 
 		newUser := models.User{
-			Id:        userID,
-			Email:     user.Email,
-			FullName:  user.FullName,
-			CreatedAt: time.Now(),
-			UpdatedAt: time.Now(),
+			Id:          userID,
+			Email:       user.Email,
+			FullName:    user.FullName,
+			CreatedAt:   time.Now(),
+			UpdatedAt:   time.Now(),
+			AvatarColor: getRandomColor(),
 		}
 		services.CreateUser(c, &newUser)
 
