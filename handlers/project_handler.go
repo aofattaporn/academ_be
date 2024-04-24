@@ -330,3 +330,26 @@ func UpdateProjectDetails(c *gin.Context) {
 	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_PROJECT_SUCCESS, projectInfo)
 
 }
+
+func DeleteProjectById(c *gin.Context) {
+
+	projectId := c.Param("projectId")
+	if projectId == "" {
+		handleBussinessError(c, "Can't to find your Tasks ID")
+	}
+
+	err := services.DeleteProjectById(c, projectId)
+	if err != nil {
+		handleTechnicalError(c, err.Error())
+		return
+	}
+
+	err = services.DeleteTasksByProjectId(c, projectId)
+	if err != nil {
+		handleTechnicalError(c, err.Error())
+		return
+	}
+
+	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_PROJECT_SUCCESS, nil)
+
+}

@@ -89,6 +89,20 @@ func DeleteTasksByTasksId(c *gin.Context, tasksId string) (err error) {
 
 }
 
+func DeleteTasksByProjectId(c *gin.Context, projectId string) (err error) {
+	ctx, cancel := context.WithTimeout(c, 5*time.Second)
+	defer cancel()
+
+	filter := bson.D{{Key: "projectId", Value: projectId}}
+	_, err = configs.GetCollection(mongoClient, TASKS_COLLECTION).DeleteMany(ctx, filter)
+	if err != nil {
+		return err
+	}
+
+	return nil
+
+}
+
 func ChangeProcesss(c *gin.Context, tasksId string, processId string) (err error) {
 
 	ctx, cancel := context.WithTimeout(c, 5*time.Second)

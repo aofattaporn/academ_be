@@ -45,6 +45,24 @@ func GetProjectById(c *gin.Context, projectId string) (project *models.ProjectIn
 	return project, err
 }
 
+func DeleteProjectById(c *gin.Context, projectId string) (err error) {
+	ctx, cancel := context.WithTimeout(c, 5*time.Second)
+	defer cancel()
+
+	// Convert projectId string to ObjectId
+	objID, err := primitive.ObjectIDFromHex(projectId)
+	if err != nil {
+		return err
+	}
+
+	_, err = configs.GetCollection(mongoClient, PROJECT_COLLECTION).DeleteOne(ctx, bson.M{"_id": objID})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func GetProjectsByMemberUserID(c *gin.Context, myUserID string) (projects []models.MyProject, err error) {
 	ctx, cancel := context.WithTimeout(c, 5*time.Second)
 	defer cancel()
