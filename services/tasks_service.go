@@ -147,29 +147,26 @@ func UpdateTasksByTaskId(c *gin.Context, tasksId string, tasks models.UpdateTask
 	return nil
 }
 
-func GetTasksByUserId(c *gin.Context, userId string) (projects []models.Tasks, err error) {
+func GetTasksByUserId(c *gin.Context, userId string) ([]models.Tasks, error) {
 	ctx, cancel := context.WithTimeout(c, 5*time.Second)
 	defer cancel()
 
-	filter := bson.M{"assignee": bson.M{"$elemMatch": bson.M{"userId": userId}}}
-	cursor, err := configs.GetCollection(mongoClient, PROJECT_COLLECTION).Find(ctx, filter)
+	filter := bson.M{"assignee.userId": userId}
+	cursor, err := configs.GetCollection(mongoClient, TASKS_COLLECTION).Find(ctx, filter)
 	if err != nil {
 		return nil, err
 	}
 
-	if err != nil {
-		return nil, err
-	}
 	defer cursor.Close(ctx)
 
-	// Decode projects directly into the result slice
-	if err := cursor.All(ctx, &projects); err != nil {
+	tasks := make([]models.Tasks, 0)
+	if err := cursor.All(ctx, &tasks); err != nil {
 		return nil, err
 	}
 
-	if len(projects) == 0 {
+	if len(tasks) == 0 {
 		return []models.Tasks{}, nil
 	}
 
-	return projects, nil
+	return tasks, nil
 }
