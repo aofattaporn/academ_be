@@ -213,3 +213,18 @@ func GetAllTasksEachProject(c *gin.Context) {
 	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_TASKS_SUCCESS, allMytasks)
 
 }
+
+func GetAllTasksHomePage(c *gin.Context) {
+
+	// getting userID
+	userID := c.MustGet(USER_ID).(string)
+
+	tasks, err := services.GetTasksByUserId(c, userID)
+	if err != nil {
+		handleTechnicalError(c, err.Error())
+		return
+	}
+
+	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_TASKS_SUCCESS, tasks)
+
+}
