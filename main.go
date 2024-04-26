@@ -23,6 +23,7 @@ import (
 	"academ_be/configs"
 	"academ_be/handlers"
 	"academ_be/middlewares"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 
@@ -46,6 +47,13 @@ func setupRouter() *gin.Engine {
 	v1 := router.Group("/api/v1")
 	{
 		v1.Use(middlewares.AuthRequire(admin))
+
+		v1.GET("/send-notification", func(c *gin.Context) {
+			configs.SendPushNotification(c)
+			c.JSON(http.StatusOK, gin.H{
+				"message": "Notification sent",
+			})
+		})
 
 		users := v1.Group("/")
 		{
