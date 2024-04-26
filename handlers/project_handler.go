@@ -90,6 +90,20 @@ func GetAllMyProjects(c *gin.Context) {
 	handleSuccess(c, http.StatusCreated, SUCCESS, GET_MY_PROJECT_SUCCESS, projects)
 }
 
+func GetAllMyProjectsHomePage(c *gin.Context) {
+	// Extract the user_id from the request parameters
+	userID := c.MustGet(USER_ID).(string)
+
+	// Call your business logic function to get projects by user ID
+	projects, err := services.GetProjectsByMemberUserID(c, userID)
+	if err != nil {
+		handleTechnicalError(c, err.Error())
+		return
+	}
+
+	handleSuccess(c, http.StatusCreated, SUCCESS, GET_MY_PROJECT_SUCCESS, projects)
+}
+
 // CreateProject godoc
 // @summary Health Check
 // @description Health checking for the service

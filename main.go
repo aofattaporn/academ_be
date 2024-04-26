@@ -57,6 +57,7 @@ func setupRouter() *gin.Engine {
 
 		projects := v1.Group("/projects")
 		{
+			projects.GET("/homepage", handlers.GetAllMyProjectsHomePage)
 			projects.GET("/tasks/users", handlers.GetAllTasksEachProject)
 			projects.GET("/users/id", handlers.GetAllMyProjects)
 			projects.POST("", handlers.CreateProject)
@@ -87,13 +88,12 @@ func setupRouter() *gin.Engine {
 
 		tasks := v1.Group("/tasks")
 		{
+			tasks.GET("/homepage", handlers.GetAllTasksHomePage)
+			tasks.GET("projects/:projectId", handlers.GetAllTasksByProjectId)
 			tasks.POST("", handlers.CreateTasks)               // Create a new task
 			tasks.GET("/:taskId", handlers.GetTasksById)       // Get task by ID
 			tasks.PUT("/:taskId", handlers.UpdateTasks)        // Update task by ID
 			tasks.DELETE("/:taskId", handlers.DeleteTasksById) // Delete task by ID
-
-			// Routes related to tasks and projects
-			tasks.GET("projects/:projectId", handlers.GetAllTasksByProjectId) // Get all tasks by project ID
 
 			// Routes related to task processes
 			tasks.PUT("/:taskId/process/:processId", handlers.ChangeProcesss) // Change task process
