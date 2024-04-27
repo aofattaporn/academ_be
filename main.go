@@ -110,6 +110,8 @@ func setupRouter() *gin.Engine {
 		notifications := v1.Group("/notifications")
 		{
 			notifications.GET("", handlers.GetAllMyNotification)
+			notifications.GET("/:notiId", handlers.UpdateClearNotiById)
+
 		}
 
 	}

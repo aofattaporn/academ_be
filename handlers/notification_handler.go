@@ -20,3 +20,19 @@ func GetAllMyNotification(c *gin.Context) {
 
 	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_PROJECT_SUCCESS, notifications)
 }
+
+func UpdateClearNotiById(c *gin.Context) {
+
+	notiId := c.Param("notiId")
+	if notiId == "" {
+		handleBussinessError(c, "Can't to find your Tasks ID")
+	}
+
+	err := services.UpdateClearNotiById(c, notiId)
+	if err != nil {
+		handleTechnicalError(c, err.Error())
+		return
+	}
+
+	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_PROJECT_SUCCESS, nil)
+}

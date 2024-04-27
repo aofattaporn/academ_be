@@ -11,6 +11,7 @@ import (
 	"firebase.google.com/go/messaging"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func FindFCMByMember(c *gin.Context, userId string) (fcm *models.FCM, err error) {
@@ -84,7 +85,7 @@ func PushNotification(c *gin.Context, fcmToken string, noti models.Notification)
 
 }
 
-func GetAllNotifications(c *gin.Context, userId string) (notifications []models.Notification, err error) {
+func GetAllNotifications(c *gin.Context, userId string) (notifications []models.NotificationRes, err error) {
 
 	ctx, cancel := context.WithTimeout(c, 5*time.Second)
 	defer cancel()
@@ -107,9 +108,31 @@ func GetAllNotifications(c *gin.Context, userId string) (notifications []models.
 	}
 
 	if len(notifications) == 0 {
-		return []models.Notification{}, nil
+		return []models.NotificationRes{}, nil
 	}
 
 	return notifications, nil
+
+}
+
+func UpdateClearNotiById(c *gin.Context, notiId string) (err error) {
+
+	ctx, cancel := context.WithTimeout(c, 5*time.Second)
+	defer cancel()
+
+	notiID, err := primitive.ObjectIDFromHex(notiId)
+	if err != nil {
+		return err
+	}
+
+	filter := bson.M{"_id": notiID}
+	update := bson.M{"$set": bson.M{"isClear": true}}
+
+	_, err = configs.GetCollection(mongoClient, NOTIFICATION_COLLECTION).UpdateOne(ctx, filter, update)
+	if err != nil {
+		return err
+	}
+
+	return nil
 
 }
