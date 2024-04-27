@@ -83,3 +83,33 @@ func PushNotification(c *gin.Context, fcmToken string, noti models.Notification)
 	}
 
 }
+
+func GetAllNotifications(c *gin.Context, userId string) (notifications []models.Notification, err error) {
+
+	ctx, cancel := context.WithTimeout(c, 5*time.Second)
+	defer cancel()
+
+	filter := bson.M{"userId": userId}
+
+	cursor, err := configs.GetCollection(mongoClient, NOTIFICATION_COLLECTION).Find(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	// Decode projects directly into the result slice
+	if err := cursor.All(ctx, &notifications); err != nil {
+		return nil, err
+	}
+
+	if len(notifications) == 0 {
+		return []models.Notification{}, nil
+	}
+
+	return notifications, nil
+
+}

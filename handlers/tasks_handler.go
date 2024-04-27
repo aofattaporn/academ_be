@@ -176,10 +176,12 @@ func UpdateTasks(c *gin.Context) {
 
 		now := time.Now()
 		noti := models.Notification{
+			UserId:         updateTasks.Assignee.UserId,
 			ProjectProfile: project.ProjectProfile,
 			Title:          "Project Assignee",
 			Body:           "You are assigned a tasks",
 			Date:           &now,
+			IsClear:        false,
 		}
 
 		err = services.AddNotification(c, fcm.FCM_TOKEN, noti)

@@ -107,6 +107,11 @@ func setupRouter() *gin.Engine {
 			tasks.PUT("/:taskId/process/:processId", handlers.ChangeProcesss) // Change task process
 		}
 
+		notifications := v1.Group("/notifications")
+		{
+			notifications.GET("", handlers.GetAllMyNotification)
+		}
+
 	}
 
 	return router
