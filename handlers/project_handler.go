@@ -101,7 +101,7 @@ func GetAllMyProjectsHomePage(c *gin.Context) {
 		return
 	}
 
-	handleSuccess(c, http.StatusCreated, SUCCESS, GET_MY_PROJECT_SUCCESS, projects)
+	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_PROJECT_SUCCESS, projects)
 }
 
 // CreateProject godoc

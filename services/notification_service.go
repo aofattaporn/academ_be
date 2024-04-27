@@ -69,6 +69,11 @@ func PushNotification(c *gin.Context, fcmToken string, noti models.Notification)
 		},
 		Data:  data,
 		Token: fcmToken,
+		Webpush: &messaging.WebpushConfig{
+			FcmOptions: &messaging.WebpushFcmOptions{
+				Link: "https://localhost:5173/",
+			},
+		},
 	}
 
 	_, err := client.Send(c, message)
