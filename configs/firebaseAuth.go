@@ -60,6 +60,25 @@ func SendPushNotification(c *gin.Context) {
 	}
 
 	fmt.Println("Successfully sent message:", response)
-	fmt.Println(" message:", message)
+	fmt.Println("message:", message)
+
+}
+
+func CreateMessage(c *gin.Context) (client *messaging.Client) {
+
+	// Connect to Firebase
+	opt := option.WithCredentialsFile("./academprojex-firebase-adminsdk.json")
+	app, err := firebase.NewApp(context.Background(), nil, opt)
+	if err != nil {
+		log.Fatalf("error initializing app: %v", err)
+	}
+
+	ctx := context.Background()
+	client, err = app.Messaging(ctx)
+	if err != nil {
+		log.Fatalf("error getting Messaging client: %v\n", err)
+	}
+
+	return client
 
 }
