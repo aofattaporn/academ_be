@@ -115,7 +115,7 @@ func GetAllNotifications(c *gin.Context, userId string) (notifications []models.
 
 }
 
-func UpdateClearNotiById(c *gin.Context, notiId string) (err error) {
+func UpdateClearNotiById(c *gin.Context, notiId string, isClearNoti bool) (err error) {
 
 	ctx, cancel := context.WithTimeout(c, 5*time.Second)
 	defer cancel()
@@ -126,9 +126,29 @@ func UpdateClearNotiById(c *gin.Context, notiId string) (err error) {
 	}
 
 	filter := bson.M{"_id": notiID}
-	update := bson.M{"$set": bson.M{"isClear": true}}
+	update := bson.M{"$set": bson.M{"isClear": isClearNoti}}
 
 	_, err = configs.GetCollection(mongoClient, NOTIFICATION_COLLECTION).UpdateOne(ctx, filter, update)
+	if err != nil {
+		return err
+	}
+
+	return nil
+
+}
+
+func DeleteNotiById(c *gin.Context, notiId string) (err error) {
+
+	ctx, cancel := context.WithTimeout(c, 5*time.Second)
+	defer cancel()
+
+	notiID, err := primitive.ObjectIDFromHex(notiId)
+	if err != nil {
+		return err
+	}
+
+	filter := bson.M{"_id": notiID}
+	_, err = configs.GetCollection(mongoClient, NOTIFICATION_COLLECTION).DeleteOne(ctx, filter)
 	if err != nil {
 		return err
 	}

@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"academ_be/models"
 	"academ_be/services"
 	"net/http"
 
@@ -28,7 +29,29 @@ func UpdateClearNotiById(c *gin.Context) {
 		handleBussinessError(c, "Can't to find your Tasks ID")
 	}
 
-	err := services.UpdateClearNotiById(c, notiId)
+	var updateIsClearNoti models.UpdateIsClearNoti
+	if err := c.BindJSON(&updateIsClearNoti); err != nil {
+		handleBussinessError(c, err.Error())
+		return
+	}
+
+	err := services.UpdateClearNotiById(c, notiId, updateIsClearNoti.IsClear)
+	if err != nil {
+		handleTechnicalError(c, err.Error())
+		return
+	}
+
+	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_PROJECT_SUCCESS, nil)
+}
+
+func DeleteNotiById(c *gin.Context) {
+
+	notiId := c.Param("notiId")
+	if notiId == "" {
+		handleBussinessError(c, "Can't to find your Tasks ID")
+	}
+
+	err := services.DeleteNotiById(c, notiId)
 	if err != nil {
 		handleTechnicalError(c, err.Error())
 		return

@@ -20,3 +20,7 @@ type NotificationRes struct {
 	Date           *time.Time     `bson:"date" json:"date"`
 	IsClear        bool           `bson:"isClear" json:"isClear"`
 }
+
+type UpdateIsClearNoti struct {
+	IsClear bool `bson:"isClear" json:"isClear"`
+}
