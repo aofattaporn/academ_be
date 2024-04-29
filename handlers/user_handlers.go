@@ -3,6 +3,7 @@ package handlers
 import (
 	"academ_be/models"
 	"academ_be/services"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -65,7 +66,15 @@ func GetUser(c *gin.Context) {
 		handleTechnicalError(c, err.Error())
 		return
 	}
-	handleSuccess(c, http.StatusCreated, SUCCESS, USER_SIGNUP_SUCCESS, user)
+	// update token device
+	fcmToken := c.GetHeader("FCM_TOEKN")
+	err = services.SaveFCMToken(c, userID, fcmToken)
+	if err != nil {
+		handleTechnicalError(c, err.Error())
+		return
+	}
+
+	handleSuccess(c, http.StatusOK, SUCCESS, USER_SIGNUP_SUCCESS, user)
 }
 
 // CreateUserByGoogle godoc
@@ -88,6 +97,8 @@ func CreateUserByGoogle(c *gin.Context) {
 		handleTechnicalError(c, err.Error())
 	}
 
+	fmt.Println("****")
+
 	if count < 1 {
 
 		// no userId on database
@@ -109,6 +120,14 @@ func CreateUserByGoogle(c *gin.Context) {
 
 		handleSuccess(c, http.StatusCreated, SUCCESS, USER_SIGNUP_SUCCESS, nil)
 	} else {
+
+		// update token device
+		fcmToken := c.GetHeader("FCM_TOEKN")
+		err = services.SaveFCMToken(c, userID, fcmToken)
+		if err != nil {
+			handleTechnicalError(c, err.Error())
+			return
+		}
 
 		// already existing user in database
 		handleSuccess(c, http.StatusCreated, SUCCESS, USER_SIGNUP_SUCCESS, nil)

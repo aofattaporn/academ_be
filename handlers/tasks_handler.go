@@ -4,6 +4,7 @@ import (
 	"academ_be/models"
 	"academ_be/services"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -152,10 +153,43 @@ func UpdateTasks(c *gin.Context) {
 		updateTasks.DueDate = nil
 	}
 
-	err := services.UpdateTasksByTaskId(c, tasksId, updateTasks)
+	update, err := services.UpdateTasksByTaskId(c, tasksId, updateTasks)
 	if err != nil {
 		handleTechnicalError(c, err.Error())
 		return
+	}
+
+	// push noti
+	if updateTasks.Assignee.UserId != "" {
+
+		fcm, err := services.FindFCMByMember(c, updateTasks.Assignee.UserId)
+		if err != nil {
+			handleTechnicalError(c, err.Error())
+			return
+		}
+
+		project, err := services.GetProjectById(c, update.ProjectId)
+		if err != nil {
+			handleTechnicalError(c, err.Error())
+			return
+		}
+
+		now := time.Now()
+		noti := models.Notification{
+			UserId:         updateTasks.Assignee.UserId,
+			ProjectProfile: project.ProjectProfile,
+			Title:          "Project Assignee",
+			Body:           "You are assigned a tasks",
+			Date:           &now,
+			IsClear:        false,
+		}
+
+		err = services.AddNotification(c, fcm.FCM_TOKEN, noti)
+		if err != nil {
+			handleTechnicalError(c, err.Error())
+			return
+		}
+
 	}
 
 	// Return success response

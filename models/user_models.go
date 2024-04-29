@@ -19,6 +19,10 @@ type UserResponse struct {
 	AvatarColor string `bson:"avatarColor" json:"avatarColor"`
 }
 
+type FCM struct {
+	FCM_TOKEN string `bson:"fcm_token" json:"fcm_token"`
+}
+
 type UserFullInfo struct {
 	Id          string `bson:"_id" json:"id,omitempty" json:id`
 	Email       string `json:"email,omitempty" validate:"required"`

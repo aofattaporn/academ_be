@@ -62,7 +62,7 @@ type Process struct {
 type Member struct {
 	UserId      string             `bson:"userId" json:"userId"`
 	UserName    string             `bson:"userName" json:"userName"`
-	Emaill      string             `json:"email" json:"email"`
+	Emaill      string             `bson:"email" json:"email"`
 	RoleId      primitive.ObjectID `bson:"roleId" json:"roleId"`
 	AvatarColor string             `bson:"avatarColor" json:"avatarColor"`
 }
