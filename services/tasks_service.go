@@ -4,6 +4,7 @@ import (
 	"academ_be/configs"
 	"academ_be/models"
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -29,6 +30,8 @@ func GetAllTasksByProjectId(c *gin.Context, projectId string) (tasks []models.Ta
 	if err := cursor.All(ctx, &tasks); err != nil {
 		return nil, err
 	}
+
+	fmt.Println(len((tasks)))
 
 	if len(tasks) == 0 {
 		return []models.Tasks{}, nil
@@ -56,7 +59,7 @@ func GetTasksByProjectId(c *gin.Context, projectId string) (tasks *models.Tasks,
 
 }
 
-func CreateTasks(c *gin.Context, newTasks *models.CreateTasks) (err error) {
+func CreateTasks(c *gin.Context, newTasks *models.Tasks) (err error) {
 	ctx, cancel := context.WithTimeout(c, 5*time.Second)
 	defer cancel()
 
@@ -121,7 +124,7 @@ func ChangeProcesss(c *gin.Context, tasksId string, processId string) (err error
 
 }
 
-func UpdateTasksByTaskId(c *gin.Context, tasksId string, tasks models.UpdateTasks) (newData *models.Tasks, err error) {
+func UpdateTasksByTaskId(c *gin.Context, tasksId string, tasks models.Tasks) (newData *models.Tasks, err error) {
 	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
 	defer cancel()
 

@@ -7,20 +7,20 @@ import (
 )
 
 type Tasks struct {
-	TasksId   primitive.ObjectID `bson:"_id,omitempty" json:"tasksId"`
+	TasksId   primitive.ObjectID `bson:"_id,omitempty" json:"tasksId,omitempty"`
 	ProjectId string             `bson:"projectId" json:"projectId"`
-	TasksName string             `bson:"tasksName" json:"tasksName"`
 	ProcessId string             `bson:"processId" json:"processId"`
-	Assignee  Member             `bson:"assignee" json:"assignee"`
-	StartDate *time.Time         `bson:"startDate" json:"startDate"`
-	DueDate   *time.Time         `bson:"dueDate" json:"dueDate"`
+	TasksName string             `bson:"tasksName,omitempty" json:"tasksName"`
+	Assignee  *Member            `bson:"assignee,omitempty" json:"assignee,omitempty"`
+	StartDate *time.Time         `bson:"startDate,omitempty" json:"startDate,omitempty"`
+	DueDate   *time.Time         `bson:"dueDate,omitempty" json:"dueDate,omitempty"`
 }
 
 type UpdateTasks struct {
 	TasksId   primitive.ObjectID `bson:"_id,omitempty" json:"tasksId"`
 	TasksName string             `bson:"tasksName" json:"tasksName"`
 	ProcessId string             `bson:"processId" json:"processId"`
-	Assignee  Member             `bson:"assignee" json:"assignee"`
+	Assignee  *Member            `bson:"assignee,omitempty" json:"assignee,omitempty"`
 	StartDate *time.Time         `bson:"startDate" json:"startDate"`
 	DueDate   *time.Time         `bson:"dueDate" json:"dueDate"`
 }

@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // GetAllTasks godoc
@@ -43,13 +42,11 @@ func GetAllTasksByProjectId(c *gin.Context) {
 // @router /api/v1/sign-in [post]
 func CreateTasks(c *gin.Context) {
 
-	var createTasks models.CreateTasks
+	var createTasks models.Tasks
 	if err := c.BindJSON(&createTasks); err != nil {
 		handleBussinessError(c, err.Error())
 		return
 	}
-
-	createTasks.TasksId = primitive.NewObjectID()
 
 	if err := services.CreateTasks(c, &createTasks); err != nil {
 		handleTechnicalError(c, err.Error())
@@ -133,13 +130,13 @@ func ChangeProcesss(c *gin.Context) {
 // @response 200 {string} string "OK"
 // @router /api/v1/sign-in [post]
 func UpdateTasks(c *gin.Context) {
-
 	tasksId := c.Param("taskId")
 	if tasksId == "" {
-		handleBussinessError(c, "Can't to find your Tasks ID")
+		handleBussinessError(c, "Can't find your Tasks ID")
+		return
 	}
 
-	var updateTasks models.UpdateTasks
+	var updateTasks models.Tasks
 	if err := c.BindJSON(&updateTasks); err != nil {
 		handleBussinessError(c, err.Error())
 		return
@@ -153,48 +150,33 @@ func UpdateTasks(c *gin.Context) {
 		updateTasks.DueDate = nil
 	}
 
-	update, err := services.UpdateTasksByTaskId(c, tasksId, updateTasks)
+	// Update Tasks
+	_, err := services.UpdateTasksByTaskId(c, tasksId, updateTasks)
 	if err != nil {
 		handleTechnicalError(c, err.Error())
 		return
 	}
 
-	// push noti
-	if updateTasks.Assignee.UserId != "" {
-
-		fcm, err := services.FindFCMByMember(c, updateTasks.Assignee.UserId)
-		if err != nil {
-			handleTechnicalError(c, err.Error())
-			return
-		}
-
-		project, err := services.GetProjectById(c, update.ProjectId)
-		if err != nil {
-			handleTechnicalError(c, err.Error())
-			return
-		}
-
-		now := time.Now()
-		noti := models.Notification{
-			UserId:         updateTasks.Assignee.UserId,
-			ProjectProfile: project.ProjectProfile,
-			Title:          "Project Assignee",
-			Body:           "You are assigned a tasks",
-			Date:           &now,
-			IsClear:        false,
-		}
-
-		err = services.AddNotification(c, fcm.FCM_TOKEN, noti)
-		if err != nil {
-			handleTechnicalError(c, err.Error())
-			return
-		}
-
-	}
-
 	// Return success response
-	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_TASKS_SUCCESS, &updateTasks)
+	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_TASKS_SUCCESS, updateTasks)
 
+	// // push noti
+	// if updateTasks.Assignee != nil && updateTasks.Assignee.UserId != "" {
+	// 	project, err := services.GetProjectById(c, newData.ProjectId)
+	// 	if err != nil {
+	// 		handleTechnicalError(c, err.Error())
+	// 		return
+	// 	}
+
+	// 	sendNotificationByUserId(c, updateTasks.Assignee.UserId, &project.ProjectProfile)
+
+	// 	invitationToken := generateInvitationToken()
+	// 	err = sendInvite(updateTasks.Assignee.Emaill, project.ProjectProfile.ProjectName, invitationToken)
+	// 	if err != nil {
+	// 		handleTechnicalError(c, err.Error())
+	// 		return
+	// 	}
+	// }
 }
 
 // DeleteTasksById godoc
@@ -260,5 +242,34 @@ func GetAllTasksHomePage(c *gin.Context) {
 	}
 
 	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_TASKS_SUCCESS, tasks)
+
+}
+
+func sendNotificationByUserId(c *gin.Context, userId string, projectProfile *models.ProjectProfile) {
+
+	fcm, err := services.FindFCMByMember(c, userId)
+	if err != nil {
+		return
+	}
+
+	now := time.Now()
+	noti := models.Notification{
+		UserId:         userId,
+		ProjectProfile: *projectProfile,
+		Title:          "Project Assignee",
+		Body:           "You are assigned a tasks",
+		Date:           &now,
+		IsClear:        false,
+	}
+
+	err = services.AddNotification(c, fcm.FCM_TOKEN, noti)
+	if err != nil {
+		handleTechnicalError(c, err.Error())
+		return
+	}
+
+}
+
+func sendEmailByUserId() {
 
 }
