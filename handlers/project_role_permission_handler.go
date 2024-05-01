@@ -106,6 +106,8 @@ func DeleteRole(c *gin.Context) {
 		return
 	}
 
+	// TODO : Delete Each Permission id within roles ?
+
 	roleAndRolePermission := getRolesAndPermissionIdByProject(c, projectId, userID)
 
 	handleSuccess(c, http.StatusCreated, SUCCESS, GET_MY_PROJECT_SUCCESS, roleAndRolePermission)

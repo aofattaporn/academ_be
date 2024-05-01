@@ -4,7 +4,6 @@ import (
 	"academ_be/configs"
 	"academ_be/models"
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -30,8 +29,6 @@ func GetAllTasksByProjectId(c *gin.Context, projectId string) (tasks []models.Ta
 	if err := cursor.All(ctx, &tasks); err != nil {
 		return nil, err
 	}
-
-	fmt.Println(len((tasks)))
 
 	if len(tasks) == 0 {
 		return []models.Tasks{}, nil

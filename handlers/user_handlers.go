@@ -3,7 +3,6 @@ package handlers
 import (
 	"academ_be/models"
 	"academ_be/services"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -96,8 +95,6 @@ func CreateUserByGoogle(c *gin.Context) {
 	if err != nil {
 		handleTechnicalError(c, err.Error())
 	}
-
-	fmt.Println("****")
 
 	if count < 1 {
 
