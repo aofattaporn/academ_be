@@ -3,7 +3,6 @@ package handlers
 import (
 	"academ_be/models"
 	"academ_be/services"
-	"fmt"
 	"math/rand"
 	"net/http"
 	"time"
@@ -291,10 +290,6 @@ func UpdateProjectDetails(c *gin.Context) {
 		handleBussinessError(c, err.Error())
 		return
 	}
-
-	fmt.Println(projectUpdate.ProjectStartDate)
-	fmt.Println(projectUpdate.ProjectEndDate)
-	fmt.Println(projectUpdate.Views)
 
 	err := services.UpdateProjectDetails(c, projectId, projectUpdate)
 	if err != nil {
