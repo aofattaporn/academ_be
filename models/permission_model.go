@@ -35,9 +35,9 @@ type TaskPermission struct {
 }
 
 type RolePermission struct {
-	AddNew bool `bson:"addNew"`
-	Edit   bool `bson:"edit"`
-	Delete bool `bson:"delete"`
+	AddNew bool `bson:"addNew" json:"addNew"`
+	Edit   bool `bson:"edit" json:"edit"`
+	Delete bool `bson:"delete" json:"delete"`
 }
 
 type CreateRole struct {
@@ -45,6 +45,6 @@ type CreateRole struct {
 }
 
 type RoleAndRolePermission struct {
-	RolesAndFullPermission RoleAndFullPermission `bson:"rolesAndFullPermission" json:"rolesAndFullPermission"`
-	RolePermission         RolePermission        `bson:"rolePermission" json:"rolePermission"`
+	RolesAndFullPermission []RoleAndFullPermission `bson:"rolesAndFullPermission" json:"rolesAndFullPermission"`
+	RolePermission         RolePermission          `bson:"rolePermission" json:"rolePermission"`
 }
