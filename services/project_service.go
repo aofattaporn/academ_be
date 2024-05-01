@@ -4,7 +4,6 @@ import (
 	"academ_be/configs"
 	"academ_be/models"
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
@@ -153,16 +152,31 @@ func UpdateProjectDetails(c *gin.Context, projectId string, projectUpdate models
 		return err
 	}
 
-	filter := bson.M{"_id": id}
-	update := bson.M{"$set": projectUpdate}
+	filter := bson.D{{Key: "_id", Value: id}}
 
-	result, err := configs.GetCollection(mongoClient, PROJECT_COLLECTION).UpdateOne(ctx, filter, update)
-	if err != nil {
-		return err
+	update := bson.M{}
+
+	update["projectProfile"] = projectUpdate.ProjectProfile
+	update["views"] = projectUpdate.Views
+	// Check if ProjectStartDate is not nil or not set to null
+	if projectUpdate.ProjectStartDate != nil {
+		update["projectStartDate"] = projectUpdate.ProjectStartDate
+	} else {
+		update["projectStartDate"] = nil // Set to null in database
 	}
 
-	if result.ModifiedCount == 0 {
-		return errors.New("project not found")
+	// Check if ProjectEndDate is not nil or not set to null
+	if projectUpdate.ProjectEndDate != nil {
+		update["projectEndDate"] = projectUpdate.ProjectEndDate
+	} else {
+		update["projectEndDate"] = nil // Set to null in database
+	}
+
+	updateSomeFields := bson.M{"$set": update}
+
+	_, err = configs.GetCollection(mongoClient, PROJECT_COLLECTION).UpdateOne(ctx, filter, updateSomeFields)
+	if err != nil {
+		return err
 	}
 
 	return nil

@@ -31,21 +31,28 @@ type ProjectInfoPermission struct {
 }
 
 type ProjectInfo struct {
-	ProjectId      primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	ProjectProfile ProjectProfile     `bson:"projectProfile"  json:"projectProfile"`
-	Process        []Process          `bson:"process"  json:"process"`
-	Members        []Member           `bson:"members"  json:"members"`
-	Roles          []Role             `bson:"roles"  json:"roles"`
-	Views          []string           `bson:"views"  json:"views"`
-	Invites        []Invite           `bson:"invites"  json:"invites"`
+	ProjectId        primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	ProjectProfile   ProjectProfile     `bson:"projectProfile"  json:"projectProfile"`
+	Process          []Process          `bson:"process"  json:"process"`
+	Members          []Member           `bson:"members"  json:"members"`
+	Roles            []Role             `bson:"roles"  json:"roles"`
+	Views            []string           `bson:"views"  json:"views"`
+	Invites          []Invite           `bson:"invites"  json:"invites"`
+	ProjectStartDate *time.Time         `bson:"projectStartDate" json:"projectStartDate"`
+	ProjectEndDate   *time.Time         `bson:"projectEndDate"  json:"projectEndDate"`
+}
+
+type ProjectDetailsPermission struct {
+	ProjectDetails    ProjectDetails    `bson:"projectDetails" json:"projectDetails"`
+	ProjectPermission ProjectPermission `bson:"projectPermission" json:"projectPermission"`
 }
 
 type ProjectDetails struct {
 	ProjectId        primitive.ObjectID `bson:"_id,omitempty" json:"projectId"`
 	ProjectProfile   ProjectProfile     `bson:"projectProfile" json:"projectProfile"`
 	Views            []string           `bson:"views" json:"views"`
-	ProjectStartDate *time.Time         `bson:"projectStartDate" json:"startDate"`
-	ProjectEndDate   *time.Time         `bson:"projectEndDate" json:"dueDate"`
+	ProjectStartDate *time.Time         `bson:"projectStartDate,omitempty" json:"projectStartDate,omitempty"`
+	ProjectEndDate   *time.Time         `bson:"projectEndDate,omitempty" json:"projectEndDate,omitempty"`
 }
 
 type ProjectProfile struct {
