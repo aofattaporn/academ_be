@@ -100,14 +100,13 @@ func DeleteRole(c *gin.Context) {
 		handleBussinessError(c, "Can't to find your Role ID")
 	}
 
-	err := services.DeleteRole(c, projectId, roleId)
+	project, err := services.DeleteRole(c, projectId, roleId)
 	if err != nil {
 		handleTechnicalError(c, err.Error())
 		return
 	}
 
-	// TODO : Delete Each Permission id within roles ?
-
+	deletePermissionBy(c, project.Roles, roleId)
 	roleAndRolePermission := getRolesAndPermissionIdByProject(c, projectId, userID)
 
 	handleSuccess(c, http.StatusCreated, SUCCESS, GET_MY_PROJECT_SUCCESS, roleAndRolePermission)
@@ -140,7 +139,6 @@ func UpdatePermission(c *gin.Context) {
 	}
 
 	roleAndRolePermission := getRolesAndPermissionIdByProject(c, projectId, userID)
-
 	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_PROJECT_SUCCESS, roleAndRolePermission)
 
 }
@@ -182,4 +180,28 @@ func getRolesAndPermissionIdByProject(c *gin.Context, projectId string, userID s
 		RolesAndFullPermission: roleAndPermissions,
 		RolePermission:         permission.Role,
 	}
+}
+
+func deletePermissionBy(c *gin.Context, roles []models.Role, roleId string) {
+
+	// Convert roleId to ObjectID
+	roleObjID, err := primitive.ObjectIDFromHex(roleId)
+	if err != nil {
+		handleTechnicalError(c, err.Error())
+		return
+	}
+
+	for _, r := range roles {
+
+		if r.RoleId == roleObjID {
+			err := services.DeletePermissionBy(c, r.PermissionId)
+			if err != nil {
+				handleTechnicalError(c, err.Error())
+				return
+			}
+			break
+		}
+
+	}
+
 }
