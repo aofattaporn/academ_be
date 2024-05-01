@@ -16,31 +16,18 @@ func GetProjectRoleAndPermissions(c *gin.Context) {
 		handleBussinessError(c, "Can't to find your Tasks ID")
 	}
 
-	// Retrieve the project by ID
 	project, err := services.GetProjectById(c, projectId)
 	if err != nil {
 		handleTechnicalError(c, err.Error())
 		return
 	}
 
-	var roleAndPermissions []models.RoleAndPermission
+	roleAndPermissions := getRolesAndPermissionIdByProject(c, project.Roles)
 
-	for _, role := range project.Roles {
-		temp, err := services.GetPermission(c, role.PermissionId)
-		if err != nil {
-			handleTechnicalError(c, err.Error())
-			return
-		}
-
-		roleAndPermission := models.RoleAndPermission{
-			RoleId:     role.RoleId,
-			RoleName:   role.RoleName,
-			Permission: *temp,
-		}
-
-		roleAndPermissions = append(roleAndPermissions, roleAndPermission)
-
-	}
+	// roleAndPermission := models.RoleAndPermission{
+	// 	ProjectInfo:    *project,
+	// 	TaskPermission: permission.Task,
+	// }
 
 	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_PROJECT_SUCCESS, roleAndPermissions)
 
@@ -79,24 +66,7 @@ func CreateProjectRoleAndPermissions(c *gin.Context) {
 		return
 	}
 
-	var roleAndPermissions []models.RoleAndPermission
-
-	for _, role := range project.Roles {
-		temp, err := services.GetPermission(c, role.PermissionId)
-		if err != nil {
-			handleTechnicalError(c, err.Error())
-			return
-		}
-
-		roleAndPermission := models.RoleAndPermission{
-			RoleId:     role.RoleId,
-			RoleName:   role.RoleName,
-			Permission: *temp,
-		}
-
-		roleAndPermissions = append(roleAndPermissions, roleAndPermission)
-
-	}
+	roleAndPermissions := getRolesAndPermissionIdByProject(c, project.Roles)
 
 	handleSuccess(c, http.StatusCreated, SUCCESS, GET_MY_PROJECT_SUCCESS, roleAndPermissions)
 
@@ -133,24 +103,7 @@ func UpdateRoleName(c *gin.Context) {
 		return
 	}
 
-	var roleAndPermissions []models.RoleAndPermission
-
-	for _, role := range project.Roles {
-		temp, err := services.GetPermission(c, role.PermissionId)
-		if err != nil {
-			handleTechnicalError(c, err.Error())
-			return
-		}
-
-		roleAndPermission := models.RoleAndPermission{
-			RoleId:     role.RoleId,
-			RoleName:   role.RoleName,
-			Permission: *temp,
-		}
-
-		roleAndPermissions = append(roleAndPermissions, roleAndPermission)
-
-	}
+	roleAndPermissions := getRolesAndPermissionIdByProject(c, project.Roles)
 
 	handleSuccess(c, http.StatusCreated, SUCCESS, GET_MY_PROJECT_SUCCESS, roleAndPermissions)
 
@@ -174,31 +127,13 @@ func DeleteRole(c *gin.Context) {
 		return
 	}
 
-	// Retrieve the project by ID
 	project, err := services.GetProjectById(c, projectId)
 	if err != nil {
 		handleTechnicalError(c, err.Error())
 		return
 	}
 
-	var roleAndPermissions []models.RoleAndPermission
-
-	for _, role := range project.Roles {
-		temp, err := services.GetPermission(c, role.PermissionId)
-		if err != nil {
-			handleTechnicalError(c, err.Error())
-			return
-		}
-
-		roleAndPermission := models.RoleAndPermission{
-			RoleId:     role.RoleId,
-			RoleName:   role.RoleName,
-			Permission: *temp,
-		}
-
-		roleAndPermissions = append(roleAndPermissions, roleAndPermission)
-
-	}
+	roleAndPermissions := getRolesAndPermissionIdByProject(c, project.Roles)
 
 	handleSuccess(c, http.StatusCreated, SUCCESS, GET_MY_PROJECT_SUCCESS, roleAndPermissions)
 
@@ -235,16 +170,22 @@ func UpdatePermission(c *gin.Context) {
 		return
 	}
 
-	var roleAndPermissions []models.RoleAndPermission
+	roleAndPermissions := getRolesAndPermissionIdByProject(c, project.Roles)
 
-	for _, role := range project.Roles {
+	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_PROJECT_SUCCESS, roleAndPermissions)
+
+}
+
+func getRolesAndPermissionIdByProject(c *gin.Context, roles []models.Role) (roleAndPermissions []models.RoleAndFullPermission) {
+
+	for _, role := range roles {
 		temp, err := services.GetPermission(c, role.PermissionId)
 		if err != nil {
 			handleTechnicalError(c, err.Error())
 			return
 		}
 
-		roleAndPermission := models.RoleAndPermission{
+		roleAndPermission := models.RoleAndFullPermission{
 			RoleId:     role.RoleId,
 			RoleName:   role.RoleName,
 			Permission: *temp,
@@ -254,6 +195,5 @@ func UpdatePermission(c *gin.Context) {
 
 	}
 
-	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_PROJECT_SUCCESS, roleAndPermissions)
-
+	return roleAndPermissions
 }

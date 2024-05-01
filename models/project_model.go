@@ -80,7 +80,7 @@ type Role struct {
 	PermissionId primitive.ObjectID `bson:"permissionsId" json:"permissionId"`
 }
 
-type RoleAndPermission struct {
+type RoleAndFullPermission struct {
 	RoleId     primitive.ObjectID `bson:"roleId" json:"roleId"`
 	RoleName   string             `bson:"roleName" json:"roleName"`
 	Permission Permission         `bson:"permissionsId" json:"permission"`

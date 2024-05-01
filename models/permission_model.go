@@ -43,3 +43,8 @@ type RolePermission struct {
 type CreateRole struct {
 	NewRole string `bson:"newRole" json:"newRole"`
 }
+
+type RoleAndRolePermission struct {
+	RolesAndFullPermission RoleAndFullPermission `bson:"rolesAndFullPermission" json:"rolesAndFullPermission"`
+	RolePermission         RolePermission        `bson:"rolePermission" json:"rolePermission"`
+}
