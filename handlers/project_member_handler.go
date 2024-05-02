@@ -83,6 +83,8 @@ func ChangeRoleMember(c *gin.Context) {
 		return
 	}
 
+	// TODO : Check have one owner
+
 	err := services.UpdateRoleByMemberID(c, projectId, memberId, roleId)
 	if err != nil {
 		handleTechnicalError(c, err.Error())

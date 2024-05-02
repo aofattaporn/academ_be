@@ -4,6 +4,7 @@ import (
 	"academ_be/models"
 	"academ_be/services"
 	"bytes"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/smtp"
@@ -36,7 +37,7 @@ func sendInvite(email, projectName, token string) error {
 
 	t, err := template.ParseFiles("template.html")
 	if err != nil {
-		return err
+		return errors.New("Can't to send this eamil")
 	}
 
 	var body bytes.Buffer
@@ -57,7 +58,7 @@ func sendInvite(email, projectName, token string) error {
 	// Sending email.
 	err = smtp.SendMail(smtpHost+":"+smtpPort, auth, from, to, body.Bytes())
 	if err != nil {
-		return err
+		return errors.New("Can't to send this eamil")
 	}
 
 	return nil
@@ -78,8 +79,13 @@ func InviteNewMember(c *gin.Context) {
 		return
 	}
 
-	invitationToken := generateInvitationToken()
+	err := checkEmailExisting(c, projectId, inviteReq.InviteEmail)
+	if err != nil {
+		handleBussinessError(c, "Email Already Existing")
+		return
+	}
 
+	invitationToken := generateInvitationToken()
 	project, err := services.GetProjectById(c, projectId)
 	if err != nil {
 		handleTechnicalError(c, err.Error())
@@ -183,4 +189,26 @@ func AcceptInviteMember(c *gin.Context) {
 
 	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_PROJECT_SUCCESS, "success")
 
+}
+
+func checkEmailExisting(c *gin.Context, projectId string, reqEmail string) error {
+
+	allMemer, err := getProjectMembers(c, projectId)
+	if err != nil {
+		return err
+	}
+
+	for _, m := range allMemer.Members {
+		if m.Emaill == reqEmail {
+			return errors.New("Eamil Already Existing")
+		}
+	}
+
+	for _, m := range allMemer.Invites {
+		if m.InviteEmail == reqEmail {
+			return errors.New("Eamil Already Invite")
+		}
+	}
+
+	return nil
 }
