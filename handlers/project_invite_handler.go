@@ -22,8 +22,8 @@ func generateInvitationToken() string {
 func sendInvite(email, projectName, token string) error {
 
 	// Sender data.
-	from := "aofattapon321@gmail.com"
-	password := "fyownnkgaikekzjk"
+	from := "academ.projex@gmail.com"
+	password := "alhsjlsqtvhyfmal"
 
 	// Receiver email address.
 	to := []string{email}
