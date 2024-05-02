@@ -21,23 +21,50 @@ func getProjectMembers(c *gin.Context, projectId string) (*models.AllMemberProje
 	}, nil
 }
 
+func getMemberAndMemberPermission(c *gin.Context, projectId string, userId string) *models.AllMemberAndPermission {
+
+	memberSetting, err := getProjectMembers(c, projectId)
+	if err != nil {
+		handleTechnicalError(c, err.Error())
+		return nil
+	}
+
+	project, err := services.GetProjectById(c, projectId)
+	if err != nil {
+		handleTechnicalError(c, err.Error())
+		return nil
+	}
+
+	permission, err := getPermissionIdByUser(c, project, userId)
+	if err != nil {
+		handleTechnicalError(c, err.Error())
+		return nil
+	}
+
+	return &models.AllMemberAndPermission{
+		AllMemberProject:  *memberSetting,
+		MembersPermission: permission.Members,
+	}
+
+}
+
 func GetProjectMembers(c *gin.Context) {
+
+	userID := c.MustGet(USER_ID).(string)
 	projectId := c.Param("projectId")
 	if projectId == "" {
 		handleBussinessError(c, "Can't find your Project ID")
 		return
 	}
 
-	memberSetting, err := getProjectMembers(c, projectId)
-	if err != nil {
-		handleTechnicalError(c, err.Error())
-		return
-	}
+	membersAndPermission := getMemberAndMemberPermission(c, projectId, userID)
 
-	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_PROJECT_SUCCESS, memberSetting)
+	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_PROJECT_SUCCESS, membersAndPermission)
 }
 
 func ChangeRoleMember(c *gin.Context) {
+
+	userID := c.MustGet(USER_ID).(string)
 	projectId := c.Param("projectId")
 	if projectId == "" {
 		handleBussinessError(c, "Can't find your Project ID")
@@ -62,17 +89,14 @@ func ChangeRoleMember(c *gin.Context) {
 		return
 	}
 
-	memberSetting, err := getProjectMembers(c, projectId)
-	if err != nil {
-		handleTechnicalError(c, err.Error())
-		return
-	}
+	membersAndPermission := getMemberAndMemberPermission(c, projectId, userID)
 
-	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_PROJECT_SUCCESS, memberSetting)
+	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_PROJECT_SUCCESS, membersAndPermission)
 }
 
 func RemoveMember(c *gin.Context) {
 
+	userID := c.MustGet(USER_ID).(string)
 	projectId := c.Param("projectId")
 	if projectId == "" {
 		handleBussinessError(c, "Can't find your Project ID")
@@ -91,12 +115,8 @@ func RemoveMember(c *gin.Context) {
 		return
 	}
 
-	memberSetting, err := getProjectMembers(c, projectId)
-	if err != nil {
-		handleTechnicalError(c, err.Error())
-		return
-	}
+	membersAndPermission := getMemberAndMemberPermission(c, projectId, userID)
 
-	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_PROJECT_SUCCESS, memberSetting)
+	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_PROJECT_SUCCESS, membersAndPermission)
 
 }

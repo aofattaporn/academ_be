@@ -131,6 +131,11 @@ type AllMemberProject struct {
 	Invites []Invite `bson:"invites"  json:"invites"`
 }
 
+type AllMemberAndPermission struct {
+	AllMemberProject  AllMemberProject  `bson:"allMemberProject" json:"allMemberProject"`
+	MembersPermission MembersPermission `bson:"membersPermission" json:"membersPermission"`
+}
+
 type AllTasksMyProject struct {
 	ProjectId        primitive.ObjectID `bson:"_id,omitempty" json:"id"`
 	ProjectProfile   ProjectProfile     `bson:"projectProfile" json:"projectProfile"`

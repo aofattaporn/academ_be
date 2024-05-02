@@ -14,60 +14,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func InviteNewMember(c *gin.Context) {
-
-	projectId := c.Param("projectId")
-	if projectId == "" {
-		handleBussinessError(c, "Can't find your Project ID")
-		return
-	}
-
-	var inviteReq models.InviteReq
-	if err := c.BindJSON(&inviteReq); err != nil {
-		handleBussinessError(c, err.Error())
-		return
-	}
-
-	invitationToken := generateInvitationToken()
-
-	// Retrieve the project by ID
-	project, err := services.GetProjectById(c, projectId)
-	if err != nil {
-		handleTechnicalError(c, err.Error())
-		return
-	}
-
-	// Send invitation email
-	err = sendInvite(inviteReq.InviteEmail, project.ProjectProfile.ProjectName, invitationToken)
-	if err != nil {
-		handleTechnicalError(c, err.Error())
-		return
-	}
-
-	inviteId := primitive.NewObjectID()
-	var invite = models.Invite{
-		InviteId:     inviteId,
-		InviteRoleId: inviteReq.InviteRoleId,
-		InviteDate:   inviteReq.InviteDate,
-		InviteEmail:  inviteReq.InviteEmail,
-		Token:        invitationToken,
-	}
-
-	err = services.CreateInvitation(c, projectId, invite)
-	if err != nil {
-		handleTechnicalError(c, err.Error())
-		return
-	}
-
-	memberSetting, err := getProjectMembers(c, projectId)
-	if err != nil {
-		handleTechnicalError(c, err.Error())
-		return
-	}
-
-	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_PROJECT_SUCCESS, memberSetting)
-}
-
 func generateInvitationToken() string {
 	return uuid.New().String()
 }
@@ -117,8 +63,58 @@ func sendInvite(email, projectName, token string) error {
 	return nil
 }
 
+func InviteNewMember(c *gin.Context) {
+
+	userID := c.MustGet(USER_ID).(string)
+	projectId := c.Param("projectId")
+	if projectId == "" {
+		handleBussinessError(c, "Can't find your Project ID")
+		return
+	}
+
+	var inviteReq models.InviteReq
+	if err := c.BindJSON(&inviteReq); err != nil {
+		handleBussinessError(c, err.Error())
+		return
+	}
+
+	invitationToken := generateInvitationToken()
+
+	project, err := services.GetProjectById(c, projectId)
+	if err != nil {
+		handleTechnicalError(c, err.Error())
+		return
+	}
+
+	err = sendInvite(inviteReq.InviteEmail, project.ProjectProfile.ProjectName, invitationToken)
+	if err != nil {
+		handleTechnicalError(c, err.Error())
+		return
+	}
+
+	inviteId := primitive.NewObjectID()
+	var invite = models.Invite{
+		InviteId:     inviteId,
+		InviteRoleId: inviteReq.InviteRoleId,
+		InviteDate:   inviteReq.InviteDate,
+		InviteEmail:  inviteReq.InviteEmail,
+		Token:        invitationToken,
+	}
+
+	err = services.CreateInvitation(c, projectId, invite)
+	if err != nil {
+		handleTechnicalError(c, err.Error())
+		return
+	}
+
+	membersAndPermission := getMemberAndMemberPermission(c, projectId, userID)
+
+	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_PROJECT_SUCCESS, membersAndPermission)
+}
+
 func DeleteInviteMember(c *gin.Context) {
 
+	userID := c.MustGet(USER_ID).(string)
 	projectId := c.Param("projectId")
 	if projectId == "" {
 		handleBussinessError(c, "Can't find your Project ID")
@@ -137,13 +133,9 @@ func DeleteInviteMember(c *gin.Context) {
 		return
 	}
 
-	memberSetting, err := getProjectMembers(c, projectId)
-	if err != nil {
-		handleTechnicalError(c, err.Error())
-		return
-	}
+	membersAndPermission := getMemberAndMemberPermission(c, projectId, userID)
 
-	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_PROJECT_SUCCESS, memberSetting)
+	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_PROJECT_SUCCESS, membersAndPermission)
 
 }
 
