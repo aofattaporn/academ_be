@@ -325,7 +325,7 @@ func DeleteProjectById(c *gin.Context) {
 		handleBussinessError(c, "Can't to find your Tasks ID")
 	}
 
-	err := services.DeleteProjectById(c, projectId)
+	project, err := services.DeleteProjectById(c, projectId)
 	if err != nil {
 		handleTechnicalError(c, err.Error())
 		return
@@ -335,6 +335,14 @@ func DeleteProjectById(c *gin.Context) {
 	if err != nil {
 		handleTechnicalError(c, err.Error())
 		return
+	}
+
+	for _, r := range project.Roles {
+		err = services.DeletePermissionBy(c, r.PermissionId)
+		if err != nil {
+			handleTechnicalError(c, err.Error())
+			return
+		}
 	}
 
 	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_PROJECT_SUCCESS, nil)
