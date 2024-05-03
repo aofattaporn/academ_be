@@ -14,6 +14,7 @@ import (
 type Project struct {
 	ProjectId        primitive.ObjectID `bson:"_id,omitempty"`
 	ProjectProfile   ProjectProfile     `bson:"projectProfile"`
+	ClassName        string             `bson:"className"`
 	ProjectStartDate *time.Time         `bson:"projectStartDate"`
 	ProjectEndDate   *time.Time         `bson:"projectEndDate"`
 	CreatedAt        *time.Time         `bson:"createdAt"`
@@ -23,11 +24,13 @@ type Project struct {
 	Views            []string           `bson:"views"`
 	Roles            []Role             `bson:"roles"`
 	Invites          []Invite           `bson:"invites"  json:"invites"`
+	IsArchive        bool               `bson:"isArchive"  json:"isArchive"`
 }
 
 type ProjectInfoPermission struct {
-	ProjectInfo    ProjectInfo    `bson:"projectInfo" json:"projectInfo"`
-	TaskPermission TaskPermission `bson:"taskPermission" json:"taskPermission"`
+	ProjectInfo       ProjectInfo       `bson:"projectInfo" json:"projectInfo"`
+	TaskPermission    TaskPermission    `bson:"taskPermission" json:"taskPermission"`
+	ProjectPermission ProjectPermission `bson:"projectPermission" json:"projectPermission"`
 }
 
 type ProjectInfo struct {
@@ -40,11 +43,16 @@ type ProjectInfo struct {
 	Invites          []Invite           `bson:"invites"  json:"invites"`
 	ProjectStartDate *time.Time         `bson:"projectStartDate" json:"projectStartDate"`
 	ProjectEndDate   *time.Time         `bson:"projectEndDate"  json:"projectEndDate"`
+	IsArchive        bool               `bson:"isArchive"  json:"isArchive"`
 }
 
 type ProjectDetailsPermission struct {
 	ProjectDetails    ProjectDetails    `bson:"projectDetails" json:"projectDetails"`
 	ProjectPermission ProjectPermission `bson:"projectPermission" json:"projectPermission"`
+}
+
+type ProjectArchive struct {
+	IsArchive bool `bson:"isArchive"  json:"isArchive"`
 }
 
 type ProjectDetails struct {
@@ -104,9 +112,11 @@ type InviteReq struct {
 // ----------------------------------------------------------
 
 type CreateProject struct {
-	ProjectName    string     `bson:"projectName"`
-	ProjectEndDate *time.Time `bson:"projectEndDate"`
-	Views          []string   `bson:"views"`
+	ProjectName      string     `bson:"projectName"`
+	ProjectStartDate *time.Time `bson:"projectStartDate" json:"projectStartDate"`
+	ProjectEndDate   *time.Time `bson:"projectEndDate"`
+	ClassName        string     `bson:"className"`
+	Views            []string   `bson:"views"`
 }
 
 type CreateInvite struct {

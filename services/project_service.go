@@ -182,6 +182,32 @@ func UpdateProjectDetails(c *gin.Context, projectId string, projectUpdate models
 	return nil
 }
 
+func UpdateProjecArchive(c *gin.Context, projectId string, projectArchive models.ProjectArchive) (err error) {
+	ctx, cancel := context.WithTimeout(c, 5*time.Second)
+	defer cancel()
+
+	// Convert the string task ID to an ObjectID
+	id, err := primitive.ObjectIDFromHex(projectId)
+	if err != nil {
+		return err
+	}
+
+	filter := bson.D{{Key: "_id", Value: id}}
+
+	update := bson.M{}
+
+	update["isArchive"] = !projectArchive.IsArchive
+
+	updateSomeFields := bson.M{"$set": update}
+
+	_, err = configs.GetCollection(mongoClient, PROJECT_COLLECTION).UpdateOne(ctx, filter, updateSomeFields)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func CreateInvitation(c *gin.Context, projectId string, invite models.Invite) (err error) {
 	ctx, cancel := context.WithTimeout(c, 5*time.Second)
 	defer cancel()

@@ -25,6 +25,8 @@ type MembersPermission struct {
 
 type ProjectPermission struct {
 	EditProfile bool `bson:"editProfile" json:"editProfile"`
+	Archive     bool `bson:"archive" json:"archive"`
+	Delete      bool `bson:"delete" json:"delete"`
 }
 
 type TaskPermission struct {

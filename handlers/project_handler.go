@@ -44,8 +44,9 @@ func GetProjectById(c *gin.Context) {
 	}
 
 	projectInfo := models.ProjectInfoPermission{
-		ProjectInfo:    *project,
-		TaskPermission: permission.Task,
+		ProjectInfo:       *project,
+		TaskPermission:    permission.Task,
+		ProjectPermission: permission.Project,
 	}
 
 	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_PROJECT_SUCCESS, projectInfo)
@@ -155,7 +156,8 @@ func CreateProject(c *gin.Context) {
 			ProjectName: createProject.ProjectName,
 			AvatarColor: getRandomColor(),
 		},
-		ProjectStartDate: &now,
+		ClassName:        createProject.ClassName,
+		ProjectStartDate: createProject.ProjectStartDate,
 		ProjectEndDate:   createProject.ProjectEndDate,
 		Views:            filteredViews,
 		Invites:          []models.Invite{},
@@ -164,6 +166,7 @@ func CreateProject(c *gin.Context) {
 		Process:          processes,
 		Members:          members,
 		Roles:            roles,
+		IsArchive:        false,
 	}
 
 	// Create the project in the database
@@ -210,6 +213,8 @@ func setUpOwnerPermission(c *gin.Context, flag bool) primitive.ObjectID {
 		},
 		Project: models.ProjectPermission{
 			EditProfile: flag,
+			Archive:     flag,
+			Delete:      flag,
 		},
 		Task: models.TaskPermission{
 			AddNew:        flag,
@@ -310,8 +315,9 @@ func UpdateProjectDetails(c *gin.Context) {
 	}
 
 	projectInfo := models.ProjectInfoPermission{
-		ProjectInfo:    *project,
-		TaskPermission: permission.Task,
+		ProjectInfo:       *project,
+		TaskPermission:    permission.Task,
+		ProjectPermission: permission.Project,
 	}
 
 	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_PROJECT_SUCCESS, projectInfo)
@@ -377,5 +383,47 @@ func getPermissionIdByUser(c *gin.Context, project *models.ProjectInfo, userID s
 	}
 
 	return permission, nil
+
+}
+
+func ArchiveProjectById(c *gin.Context) {
+
+	userID := c.MustGet(USER_ID).(string)
+	projectId := c.Param("projectId")
+	if projectId == "" {
+		handleBussinessError(c, "Can't to find your Tasks ID")
+	}
+
+	var projectArchive models.ProjectArchive
+	if err := c.BindJSON(&projectArchive); err != nil {
+		handleBussinessError(c, err.Error())
+		return
+	}
+
+	err := services.UpdateProjecArchive(c, projectId, projectArchive)
+	if err != nil {
+		handleTechnicalError(c, err.Error())
+		return
+	}
+
+	project, err := services.GetProjectById(c, projectId)
+	if err != nil {
+		handleTechnicalError(c, err.Error())
+		return
+	}
+
+	permission, err := getPermissionIdByUser(c, project, userID)
+	if err != nil {
+		handleTechnicalError(c, err.Error())
+		return
+	}
+
+	projectInfo := models.ProjectInfoPermission{
+		ProjectInfo:       *project,
+		TaskPermission:    permission.Task,
+		ProjectPermission: permission.Project,
+	}
+
+	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_PROJECT_SUCCESS, projectInfo)
 
 }
