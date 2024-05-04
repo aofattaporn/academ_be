@@ -156,6 +156,7 @@ func UpdateProjectDetails(c *gin.Context, projectId string, projectUpdate models
 
 	update := bson.M{}
 
+	update["className"] = projectUpdate.ClassName
 	update["projectProfile"] = projectUpdate.ProjectProfile
 	update["views"] = projectUpdate.Views
 	// Check if ProjectStartDate is not nil or not set to null

@@ -266,6 +266,7 @@ func GetProjectDetails(c *gin.Context) {
 	projectDetails := models.ProjectDetails{
 		ProjectId:        project.ProjectId,
 		ProjectProfile:   project.ProjectProfile,
+		ClassName:        project.ClassName,
 		Views:            project.Views,
 		ProjectStartDate: project.ProjectStartDate,
 		ProjectEndDate:   project.ProjectEndDate,

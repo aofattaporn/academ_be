@@ -36,6 +36,7 @@ type ProjectInfoPermission struct {
 type ProjectInfo struct {
 	ProjectId        primitive.ObjectID `bson:"_id,omitempty" json:"id"`
 	ProjectProfile   ProjectProfile     `bson:"projectProfile"  json:"projectProfile"`
+	ClassName        string             `bson:"className"  json:"className"`
 	Process          []Process          `bson:"process"  json:"process"`
 	Members          []Member           `bson:"members"  json:"members"`
 	Roles            []Role             `bson:"roles"  json:"roles"`
@@ -59,6 +60,7 @@ type ProjectDetails struct {
 	ProjectId        primitive.ObjectID `bson:"_id,omitempty" json:"projectId"`
 	ProjectProfile   ProjectProfile     `bson:"projectProfile" json:"projectProfile"`
 	Views            []string           `bson:"views" json:"views"`
+	ClassName        string             `bson:"className" json:"className"`
 	ProjectStartDate *time.Time         `bson:"projectStartDate,omitempty" json:"projectStartDate,omitempty"`
 	ProjectEndDate   *time.Time         `bson:"projectEndDate,omitempty" json:"projectEndDate,omitempty"`
 }
@@ -131,6 +133,7 @@ type MyProject struct {
 	ProjectId        primitive.ObjectID `bson:"_id,omitempty" json:"projectId"`
 	ProjectProfile   ProjectProfile     `bson:"projectProfile" json:"projectProfile"`
 	Members          []Member           `bson:"members" json:"members"`
+	ClassName        string             `bson:"className" json:"className"`
 	ProjectStartDate *time.Time         `bson:"projectStartDate" json:"projectStartDate"`
 	ProjectEndDate   *time.Time         `bson:"projectEndDate" json:"projectEndDate"`
 }
@@ -151,6 +154,7 @@ type AllTasksMyProject struct {
 	ProjectProfile   ProjectProfile     `bson:"projectProfile" json:"projectProfile"`
 	ProjectStartDate *time.Time         `bson:"projectStartDate" json:"projectStartDate"`
 	ProjectEndDate   *time.Time         `bson:"projectEndDate" json:"projectEndDate"`
+	ClassName        string             `bson:"className" json:"className"`
 	CreatedAt        *time.Time         `bson:"createdAt" json:"createdAt"`
 	UpdatedAt        *time.Time         `bson:"updatedAt" json:"updatedAt"`
 	Process          []Process          `bson:"process" json:"process"`
