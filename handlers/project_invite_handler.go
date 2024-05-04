@@ -4,6 +4,7 @@ import (
 	"academ_be/models"
 	"academ_be/services"
 	"bytes"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/smtp"
@@ -14,8 +15,58 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+func generateInvitationToken() string {
+	return uuid.New().String()
+}
+
+func sendInvite(email, projectName, token string) error {
+
+	// Sender data.
+	from := "academ.projex@gmail.com"
+	password := "alhsjlsqtvhyfmal"
+
+	// Receiver email address.
+	to := []string{email}
+
+	// smtp server configuration.
+	smtpHost := "smtp.gmail.com"
+	smtpPort := "587"
+
+	// Authentication.
+	auth := smtp.PlainAuth("", from, password, smtpHost)
+
+	t, err := template.ParseFiles("template.html")
+	if err != nil {
+		return errors.New("Can't to send this eamil")
+	}
+
+	var body bytes.Buffer
+
+	mimeHeaders := "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";\n\n"
+	body.Write([]byte(fmt.Sprintf("Subject: Invitation to our Event\n%s\n\n", mimeHeaders)))
+
+	t.Execute(&body, struct {
+		Name        string
+		ProjectName string
+		AcceptLink  string
+	}{
+		Name:        email,
+		ProjectName: projectName,
+		AcceptLink:  "http://localhost:5173/join-project/?token=" + token,
+	})
+
+	// Sending email.
+	err = smtp.SendMail(smtpHost+":"+smtpPort, auth, from, to, body.Bytes())
+	if err != nil {
+		return errors.New("Can't to send this eamil")
+	}
+
+	return nil
+}
+
 func InviteNewMember(c *gin.Context) {
 
+	userID := c.MustGet(USER_ID).(string)
 	projectId := c.Param("projectId")
 	if projectId == "" {
 		handleBussinessError(c, "Can't find your Project ID")
@@ -28,16 +79,19 @@ func InviteNewMember(c *gin.Context) {
 		return
 	}
 
-	invitationToken := generateInvitationToken()
+	err := checkEmailExisting(c, projectId, inviteReq.InviteEmail)
+	if err != nil {
+		handleBussinessError(c, "Email Already Existing")
+		return
+	}
 
-	// Retrieve the project by ID
+	invitationToken := generateInvitationToken()
 	project, err := services.GetProjectById(c, projectId)
 	if err != nil {
 		handleTechnicalError(c, err.Error())
 		return
 	}
 
-	// Send invitation email
 	err = sendInvite(inviteReq.InviteEmail, project.ProjectProfile.ProjectName, invitationToken)
 	if err != nil {
 		handleTechnicalError(c, err.Error())
@@ -59,66 +113,14 @@ func InviteNewMember(c *gin.Context) {
 		return
 	}
 
-	memberSetting, err := getProjectMembers(c, projectId)
-	if err != nil {
-		handleTechnicalError(c, err.Error())
-		return
-	}
+	membersAndPermission := getMemberAndMemberPermission(c, projectId, userID)
 
-	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_PROJECT_SUCCESS, memberSetting)
-}
-
-func generateInvitationToken() string {
-	return uuid.New().String()
-}
-
-func sendInvite(email, projectName, token string) error {
-
-	// Sender data.
-	from := "aofattapon321@gmail.com"
-	password := "fyownnkgaikekzjk"
-
-	// Receiver email address.
-	to := []string{email}
-
-	// smtp server configuration.
-	smtpHost := "smtp.gmail.com"
-	smtpPort := "587"
-
-	// Authentication.
-	auth := smtp.PlainAuth("", from, password, smtpHost)
-
-	t, err := template.ParseFiles("template.html")
-	if err != nil {
-		return err
-	}
-
-	var body bytes.Buffer
-
-	mimeHeaders := "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";\n\n"
-	body.Write([]byte(fmt.Sprintf("Subject: Invitation to our Event\n%s\n\n", mimeHeaders)))
-
-	t.Execute(&body, struct {
-		Name        string
-		ProjectName string
-		AcceptLink  string
-	}{
-		Name:        email,
-		ProjectName: projectName,
-		AcceptLink:  "http://localhost:5173/join-project/?token=" + token,
-	})
-
-	// Sending email.
-	err = smtp.SendMail(smtpHost+":"+smtpPort, auth, from, to, body.Bytes())
-	if err != nil {
-		return err
-	}
-
-	return nil
+	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_PROJECT_SUCCESS, membersAndPermission)
 }
 
 func DeleteInviteMember(c *gin.Context) {
 
+	userID := c.MustGet(USER_ID).(string)
 	projectId := c.Param("projectId")
 	if projectId == "" {
 		handleBussinessError(c, "Can't find your Project ID")
@@ -137,13 +139,9 @@ func DeleteInviteMember(c *gin.Context) {
 		return
 	}
 
-	memberSetting, err := getProjectMembers(c, projectId)
-	if err != nil {
-		handleTechnicalError(c, err.Error())
-		return
-	}
+	membersAndPermission := getMemberAndMemberPermission(c, projectId, userID)
 
-	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_PROJECT_SUCCESS, memberSetting)
+	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_PROJECT_SUCCESS, membersAndPermission)
 
 }
 
@@ -191,4 +189,26 @@ func AcceptInviteMember(c *gin.Context) {
 
 	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_PROJECT_SUCCESS, "success")
 
+}
+
+func checkEmailExisting(c *gin.Context, projectId string, reqEmail string) error {
+
+	allMemer, err := getProjectMembers(c, projectId)
+	if err != nil {
+		return err
+	}
+
+	for _, m := range allMemer.Members {
+		if m.Emaill == reqEmail {
+			return errors.New("Eamil Already Existing")
+		}
+	}
+
+	for _, m := range allMemer.Invites {
+		if m.InviteEmail == reqEmail {
+			return errors.New("Eamil Already Invite")
+		}
+	}
+
+	return nil
 }

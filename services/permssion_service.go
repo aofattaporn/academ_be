@@ -94,35 +94,35 @@ func UpdateRoleName(c *gin.Context, projectId string, roleId string, roleName st
 	return nil
 }
 
-func DeleteRole(c *gin.Context, projectId string, roleId string) error {
+func DeleteRole(c *gin.Context, projectId string, roleId string) (project *models.Project, err error) {
 	ctx, cancel := context.WithTimeout(c, 5*time.Second)
 	defer cancel()
 
 	// Convert projectId to ObjectID
 	objID, err := primitive.ObjectIDFromHex(projectId)
 	if err != nil {
-		return fmt.Errorf("invalid project ID: %v", err)
+		return nil, fmt.Errorf("invalid project ID: %v", err)
 	}
 
 	// Convert roleId to ObjectID
 	roleObjID, err := primitive.ObjectIDFromHex(roleId)
 	if err != nil {
-		return fmt.Errorf("invalid role ID: %v", err)
+		return nil, fmt.Errorf("invalid role ID: %v", err)
 	}
 
 	filter := bson.M{"_id": objID}
 	update := bson.M{"$pull": bson.M{"roles": bson.M{"roleId": roleObjID}}}
 
 	collection := configs.GetCollection(mongoClient, PROJECT_COLLECTION)
-	_, err = collection.UpdateOne(ctx, filter, update)
+	err = collection.FindOneAndUpdate(ctx, filter, update).Decode(&project)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			return fmt.Errorf("project not found")
+			return nil, fmt.Errorf("project not found")
 		}
-		return fmt.Errorf("error deleting role: %v", err)
+		return nil, fmt.Errorf("error deleting role: %v", err)
 	}
 
-	return nil
+	return project, nil
 }
 
 func UpdatePermission(c *gin.Context, permissionId string, updatePermission models.Permission) error {
@@ -168,4 +168,19 @@ func UpdateRoleByMemberID(c *gin.Context, projectId string, memberId string, new
 	}
 
 	return nil
+}
+
+func DeletePermissionBy(c *gin.Context, permissionId primitive.ObjectID) error {
+
+	ctx, cancel := context.WithTimeout(c, 5*time.Second)
+	defer cancel()
+
+	filter := bson.D{{Key: "_id", Value: permissionId}}
+	_, err := configs.GetCollection(mongoClient, PERMISSION_COLLECTION).DeleteOne(ctx, filter)
+	if err != nil {
+		return err
+	}
+
+	return nil
+
 }

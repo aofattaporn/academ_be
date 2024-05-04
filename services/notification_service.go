@@ -5,7 +5,6 @@ import (
 	"academ_be/models"
 	"context"
 	"errors"
-	"fmt"
 	"time"
 
 	"firebase.google.com/go/messaging"
@@ -20,7 +19,6 @@ func FindFCMByMember(c *gin.Context, userId string) (fcm *models.FCM, err error)
 	defer cancel()
 
 	filter := bson.M{"_id": userId}
-	fmt.Println(userId)
 
 	err = configs.GetCollection(mongoClient, USER_COLLECTION).FindOne(ctx, filter).Decode(&fcm)
 	if err != nil {

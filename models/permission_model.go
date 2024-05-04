@@ -25,7 +25,8 @@ type MembersPermission struct {
 
 type ProjectPermission struct {
 	EditProfile bool `bson:"editProfile" json:"editProfile"`
-	ManageView  bool `bson:"manageView" json:"manageView"`
+	Archive     bool `bson:"archive" json:"archive"`
+	Delete      bool `bson:"delete" json:"delete"`
 }
 
 type TaskPermission struct {
@@ -36,11 +37,16 @@ type TaskPermission struct {
 }
 
 type RolePermission struct {
-	AddNew bool `bson:"addNew"`
-	Edit   bool `bson:"edit"`
-	Delete bool `bson:"delete"`
+	AddNew bool `bson:"addNew" json:"addNew"`
+	Edit   bool `bson:"edit" json:"edit"`
+	Delete bool `bson:"delete" json:"delete"`
 }
 
 type CreateRole struct {
 	NewRole string `bson:"newRole" json:"newRole"`
+}
+
+type RoleAndRolePermission struct {
+	RolesAndFullPermission []RoleAndFullPermission `bson:"rolesAndFullPermission" json:"rolesAndFullPermission"`
+	RolePermission         RolePermission          `bson:"rolePermission" json:"rolePermission"`
 }

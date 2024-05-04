@@ -2,7 +2,6 @@ package configs
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	firebase "firebase.google.com/go"
@@ -52,15 +51,12 @@ func SendPushNotification(c *gin.Context) {
 		Token: "fWL1hQobmZBg0DzrlABGe7:APA91bH_t6Vv7JkZFWhvfgx4ccH_RlzcYNYzPWv6UJ1z8dgP9f1Kcdi3MXywcY1ocqCpN3TjTOjuX52cPSgPTqilo6wI3LXLnPQQ9vp2rHkZqeUqMm2PNy7PondvkVpI6DgX_I6Dlvvm",
 	}
 
-	response, err := client.Send(ctx, message)
+	_, err = client.Send(ctx, message)
 	if err != nil {
 		// log.Fatalf("Error sending message: %v", err)
 		c.AbortWithStatusJSON(400, gin.H{"error": err.Error()})
 		return
 	}
-
-	fmt.Println("Successfully sent message:", response)
-	fmt.Println("message:", message)
 
 }
 

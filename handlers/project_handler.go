@@ -26,6 +26,9 @@ func GetProjectById(c *gin.Context) {
 	// Extract the user ID from the request context
 	userID := c.MustGet(USER_ID).(string)
 	projectId := c.Param("projectId")
+	if projectId == "" {
+		handleBussinessError(c, "Can't to find your Tasks ID")
+	}
 
 	// Retrieve the project by ID
 	project, err := services.GetProjectById(c, projectId)
@@ -34,34 +37,16 @@ func GetProjectById(c *gin.Context) {
 		return
 	}
 
-	// Find the role ID corresponding to the user
-	var roleID primitive.ObjectID
-	for _, member := range project.Members {
-		if member.UserId == userID {
-			roleID = member.RoleId
-			break
-		}
-	}
-
-	// Find the permission ID corresponding to the role
-	var permissionID primitive.ObjectID
-	for _, role := range project.Roles {
-		if role.RoleId == roleID {
-			permissionID = role.PermissionId
-			break
-		}
-	}
-
-	// Retrieve the permission by ID
-	permission, err := services.GetPermission(c, permissionID)
+	permission, err := getPermissionIdByUser(c, project, userID)
 	if err != nil {
 		handleTechnicalError(c, err.Error())
 		return
 	}
 
 	projectInfo := models.ProjectInfoPermission{
-		ProjectInfo:    *project,
-		TaskPermission: permission.Task,
+		ProjectInfo:       *project,
+		TaskPermission:    permission.Task,
+		ProjectPermission: permission.Project,
 	}
 
 	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_PROJECT_SUCCESS, projectInfo)
@@ -171,7 +156,8 @@ func CreateProject(c *gin.Context) {
 			ProjectName: createProject.ProjectName,
 			AvatarColor: getRandomColor(),
 		},
-		ProjectStartDate: &now,
+		ClassName:        createProject.ClassName,
+		ProjectStartDate: createProject.ProjectStartDate,
 		ProjectEndDate:   createProject.ProjectEndDate,
 		Views:            filteredViews,
 		Invites:          []models.Invite{},
@@ -180,6 +166,7 @@ func CreateProject(c *gin.Context) {
 		Process:          processes,
 		Members:          members,
 		Roles:            roles,
+		IsArchive:        false,
 	}
 
 	// Create the project in the database
@@ -226,7 +213,8 @@ func setUpOwnerPermission(c *gin.Context, flag bool) primitive.ObjectID {
 		},
 		Project: models.ProjectPermission{
 			EditProfile: flag,
-			ManageView:  flag,
+			Archive:     flag,
+			Delete:      flag,
 		},
 		Task: models.TaskPermission{
 			AddNew:        flag,
@@ -256,24 +244,46 @@ func getRandomColor() string {
 
 func GetProjectDetails(c *gin.Context) {
 
+	userID := c.MustGet(USER_ID).(string)
+
 	projectId := c.Param("projectId")
 	if projectId == "" {
 		handleBussinessError(c, "Can't to find your Tasks ID")
 	}
 
-	// Retrieve the project by ID
-	projectDetails, err := services.GetProjectDetails(c, projectId)
+	project, err := services.GetProjectById(c, projectId)
 	if err != nil {
 		handleTechnicalError(c, err.Error())
 		return
 	}
 
-	handleSuccess(c, http.StatusCreated, SUCCESS, GET_MY_PROJECT_SUCCESS, projectDetails)
+	permission, err := getPermissionIdByUser(c, project, userID)
+	if err != nil {
+		handleTechnicalError(c, err.Error())
+		return
+	}
+
+	projectDetails := models.ProjectDetails{
+		ProjectId:        project.ProjectId,
+		ProjectProfile:   project.ProjectProfile,
+		ClassName:        project.ClassName,
+		Views:            project.Views,
+		ProjectStartDate: project.ProjectStartDate,
+		ProjectEndDate:   project.ProjectEndDate,
+	}
+
+	projectDetailsPermission := models.ProjectDetailsPermission{
+		ProjectDetails:    projectDetails,
+		ProjectPermission: permission.Project,
+	}
+
+	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_PROJECT_SUCCESS, projectDetailsPermission)
 
 }
 
 func UpdateProjectDetails(c *gin.Context) {
 
+	userID := c.MustGet(USER_ID).(string)
 	projectId := c.Param("projectId")
 	if projectId == "" {
 		handleBussinessError(c, "Can't to find your Tasks ID")
@@ -287,29 +297,66 @@ func UpdateProjectDetails(c *gin.Context) {
 		return
 	}
 
-	if projectUpdate.ProjectStartDate != nil && projectUpdate.ProjectStartDate.IsZero() {
-		projectUpdate.ProjectStartDate = nil
-	}
-
-	if projectUpdate.ProjectEndDate != nil && projectUpdate.ProjectEndDate.IsZero() {
-		projectUpdate.ProjectEndDate = nil
-	}
-
 	err := services.UpdateProjectDetails(c, projectId, projectUpdate)
 	if err != nil {
 		handleTechnicalError(c, err.Error())
 		return
 	}
 
-	// Retrieve the project by ID
 	project, err := services.GetProjectById(c, projectId)
 	if err != nil {
 		handleTechnicalError(c, err.Error())
 		return
 	}
 
-	// Extract the user_id from the request parameters
-	userID := c.MustGet(USER_ID).(string)
+	permission, err := getPermissionIdByUser(c, project, userID)
+	if err != nil {
+		handleTechnicalError(c, err.Error())
+		return
+	}
+
+	projectInfo := models.ProjectInfoPermission{
+		ProjectInfo:       *project,
+		TaskPermission:    permission.Task,
+		ProjectPermission: permission.Project,
+	}
+
+	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_PROJECT_SUCCESS, projectInfo)
+
+}
+
+func DeleteProjectById(c *gin.Context) {
+
+	projectId := c.Param("projectId")
+	if projectId == "" {
+		handleBussinessError(c, "Can't to find your Tasks ID")
+	}
+
+	project, err := services.DeleteProjectById(c, projectId)
+	if err != nil {
+		handleTechnicalError(c, err.Error())
+		return
+	}
+
+	err = services.DeleteTasksByProjectId(c, projectId)
+	if err != nil {
+		handleTechnicalError(c, err.Error())
+		return
+	}
+
+	for _, r := range project.Roles {
+		err = services.DeletePermissionBy(c, r.PermissionId)
+		if err != nil {
+			handleTechnicalError(c, err.Error())
+			return
+		}
+	}
+
+	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_PROJECT_SUCCESS, nil)
+
+}
+
+func getPermissionIdByUser(c *gin.Context, project *models.ProjectInfo, userID string) (permission *models.Permission, err error) {
 
 	// Find the role ID corresponding to the user
 	var roleID primitive.ObjectID
@@ -330,40 +377,54 @@ func UpdateProjectDetails(c *gin.Context) {
 	}
 
 	// Retrieve the permission by ID
-	permission, err := services.GetPermission(c, permissionID)
+	permission, err = services.GetPermission(c, permissionID)
+	if err != nil {
+		handleTechnicalError(c, err.Error())
+		return
+	}
+
+	return permission, nil
+
+}
+
+func ArchiveProjectById(c *gin.Context) {
+
+	userID := c.MustGet(USER_ID).(string)
+	projectId := c.Param("projectId")
+	if projectId == "" {
+		handleBussinessError(c, "Can't to find your Tasks ID")
+	}
+
+	var projectArchive models.ProjectArchive
+	if err := c.BindJSON(&projectArchive); err != nil {
+		handleBussinessError(c, err.Error())
+		return
+	}
+
+	err := services.UpdateProjecArchive(c, projectId, projectArchive)
+	if err != nil {
+		handleTechnicalError(c, err.Error())
+		return
+	}
+
+	project, err := services.GetProjectById(c, projectId)
+	if err != nil {
+		handleTechnicalError(c, err.Error())
+		return
+	}
+
+	permission, err := getPermissionIdByUser(c, project, userID)
 	if err != nil {
 		handleTechnicalError(c, err.Error())
 		return
 	}
 
 	projectInfo := models.ProjectInfoPermission{
-		ProjectInfo:    *project,
-		TaskPermission: permission.Task,
+		ProjectInfo:       *project,
+		TaskPermission:    permission.Task,
+		ProjectPermission: permission.Project,
 	}
 
 	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_PROJECT_SUCCESS, projectInfo)
-
-}
-
-func DeleteProjectById(c *gin.Context) {
-
-	projectId := c.Param("projectId")
-	if projectId == "" {
-		handleBussinessError(c, "Can't to find your Tasks ID")
-	}
-
-	err := services.DeleteProjectById(c, projectId)
-	if err != nil {
-		handleTechnicalError(c, err.Error())
-		return
-	}
-
-	err = services.DeleteTasksByProjectId(c, projectId)
-	if err != nil {
-		handleTechnicalError(c, err.Error())
-		return
-	}
-
-	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_PROJECT_SUCCESS, nil)
 
 }

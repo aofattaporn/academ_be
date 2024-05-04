@@ -4,7 +4,6 @@ import (
 	"academ_be/configs"
 	"academ_be/models"
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
@@ -104,22 +103,22 @@ func GetProjectsByMemberUserID(c *gin.Context, myUserID string) (projects []mode
 	return projects, nil
 }
 
-func DeleteProjectById(c *gin.Context, projectId string) (err error) {
+func DeleteProjectById(c *gin.Context, projectId string) (project *models.Project, err error) {
 	ctx, cancel := context.WithTimeout(c, 5*time.Second)
 	defer cancel()
 
 	// Convert projectId string to ObjectId
 	objID, err := primitive.ObjectIDFromHex(projectId)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	_, err = configs.GetCollection(mongoClient, PROJECT_COLLECTION).DeleteOne(ctx, bson.M{"_id": objID})
+	err = configs.GetCollection(mongoClient, PROJECT_COLLECTION).FindOneAndDelete(ctx, bson.M{"_id": objID}).Decode(&project)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return project, nil
 }
 
 func GetProjectDetails(c *gin.Context, projectId string) (projectDetails *models.ProjectDetails, err error) {
@@ -153,16 +152,58 @@ func UpdateProjectDetails(c *gin.Context, projectId string, projectUpdate models
 		return err
 	}
 
-	filter := bson.M{"_id": id}
-	update := bson.M{"$set": projectUpdate}
+	filter := bson.D{{Key: "_id", Value: id}}
 
-	result, err := configs.GetCollection(mongoClient, PROJECT_COLLECTION).UpdateOne(ctx, filter, update)
+	update := bson.M{}
+
+	update["className"] = projectUpdate.ClassName
+	update["projectProfile"] = projectUpdate.ProjectProfile
+	update["views"] = projectUpdate.Views
+	// Check if ProjectStartDate is not nil or not set to null
+	if projectUpdate.ProjectStartDate != nil {
+		update["projectStartDate"] = projectUpdate.ProjectStartDate
+	} else {
+		update["projectStartDate"] = nil // Set to null in database
+	}
+
+	// Check if ProjectEndDate is not nil or not set to null
+	if projectUpdate.ProjectEndDate != nil {
+		update["projectEndDate"] = projectUpdate.ProjectEndDate
+	} else {
+		update["projectEndDate"] = nil // Set to null in database
+	}
+
+	updateSomeFields := bson.M{"$set": update}
+
+	_, err = configs.GetCollection(mongoClient, PROJECT_COLLECTION).UpdateOne(ctx, filter, updateSomeFields)
 	if err != nil {
 		return err
 	}
 
-	if result.ModifiedCount == 0 {
-		return errors.New("project not found")
+	return nil
+}
+
+func UpdateProjecArchive(c *gin.Context, projectId string, projectArchive models.ProjectArchive) (err error) {
+	ctx, cancel := context.WithTimeout(c, 5*time.Second)
+	defer cancel()
+
+	// Convert the string task ID to an ObjectID
+	id, err := primitive.ObjectIDFromHex(projectId)
+	if err != nil {
+		return err
+	}
+
+	filter := bson.D{{Key: "_id", Value: id}}
+
+	update := bson.M{}
+
+	update["isArchive"] = !projectArchive.IsArchive
+
+	updateSomeFields := bson.M{"$set": update}
+
+	_, err = configs.GetCollection(mongoClient, PROJECT_COLLECTION).UpdateOne(ctx, filter, updateSomeFields)
+	if err != nil {
+		return err
 	}
 
 	return nil

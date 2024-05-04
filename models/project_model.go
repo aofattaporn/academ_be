@@ -14,6 +14,7 @@ import (
 type Project struct {
 	ProjectId        primitive.ObjectID `bson:"_id,omitempty"`
 	ProjectProfile   ProjectProfile     `bson:"projectProfile"`
+	ClassName        string             `bson:"className"`
 	ProjectStartDate *time.Time         `bson:"projectStartDate"`
 	ProjectEndDate   *time.Time         `bson:"projectEndDate"`
 	CreatedAt        *time.Time         `bson:"createdAt"`
@@ -23,29 +24,45 @@ type Project struct {
 	Views            []string           `bson:"views"`
 	Roles            []Role             `bson:"roles"`
 	Invites          []Invite           `bson:"invites"  json:"invites"`
+	IsArchive        bool               `bson:"isArchive"  json:"isArchive"`
 }
 
 type ProjectInfoPermission struct {
-	ProjectInfo    ProjectInfo    `bson:"projectInfo" json:"projectInfo"`
-	TaskPermission TaskPermission `bson:"taskPermission" json:"taskPermission"`
+	ProjectInfo       ProjectInfo       `bson:"projectInfo" json:"projectInfo"`
+	TaskPermission    TaskPermission    `bson:"taskPermission" json:"taskPermission"`
+	ProjectPermission ProjectPermission `bson:"projectPermission" json:"projectPermission"`
 }
 
 type ProjectInfo struct {
-	ProjectId      primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	ProjectProfile ProjectProfile     `bson:"projectProfile"  json:"projectProfile"`
-	Process        []Process          `bson:"process"  json:"process"`
-	Members        []Member           `bson:"members"  json:"members"`
-	Roles          []Role             `bson:"roles"  json:"roles"`
-	Views          []string           `bson:"views"  json:"views"`
-	Invites        []Invite           `bson:"invites"  json:"invites"`
+	ProjectId        primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	ProjectProfile   ProjectProfile     `bson:"projectProfile"  json:"projectProfile"`
+	ClassName        string             `bson:"className"  json:"className"`
+	Process          []Process          `bson:"process"  json:"process"`
+	Members          []Member           `bson:"members"  json:"members"`
+	Roles            []Role             `bson:"roles"  json:"roles"`
+	Views            []string           `bson:"views"  json:"views"`
+	Invites          []Invite           `bson:"invites"  json:"invites"`
+	ProjectStartDate *time.Time         `bson:"projectStartDate" json:"projectStartDate"`
+	ProjectEndDate   *time.Time         `bson:"projectEndDate"  json:"projectEndDate"`
+	IsArchive        bool               `bson:"isArchive"  json:"isArchive"`
+}
+
+type ProjectDetailsPermission struct {
+	ProjectDetails    ProjectDetails    `bson:"projectDetails" json:"projectDetails"`
+	ProjectPermission ProjectPermission `bson:"projectPermission" json:"projectPermission"`
+}
+
+type ProjectArchive struct {
+	IsArchive bool `bson:"isArchive"  json:"isArchive"`
 }
 
 type ProjectDetails struct {
 	ProjectId        primitive.ObjectID `bson:"_id,omitempty" json:"projectId"`
 	ProjectProfile   ProjectProfile     `bson:"projectProfile" json:"projectProfile"`
 	Views            []string           `bson:"views" json:"views"`
-	ProjectStartDate *time.Time         `bson:"projectStartDate" json:"startDate"`
-	ProjectEndDate   *time.Time         `bson:"projectEndDate" json:"dueDate"`
+	ClassName        string             `bson:"className" json:"className"`
+	ProjectStartDate *time.Time         `bson:"projectStartDate,omitempty" json:"projectStartDate,omitempty"`
+	ProjectEndDate   *time.Time         `bson:"projectEndDate,omitempty" json:"projectEndDate,omitempty"`
 }
 
 type ProjectProfile struct {
@@ -73,7 +90,7 @@ type Role struct {
 	PermissionId primitive.ObjectID `bson:"permissionsId" json:"permissionId"`
 }
 
-type RoleAndPermission struct {
+type RoleAndFullPermission struct {
 	RoleId     primitive.ObjectID `bson:"roleId" json:"roleId"`
 	RoleName   string             `bson:"roleName" json:"roleName"`
 	Permission Permission         `bson:"permissionsId" json:"permission"`
@@ -97,9 +114,11 @@ type InviteReq struct {
 // ----------------------------------------------------------
 
 type CreateProject struct {
-	ProjectName    string     `bson:"projectName"`
-	ProjectEndDate *time.Time `bson:"projectEndDate"`
-	Views          []string   `bson:"views"`
+	ProjectName      string     `bson:"projectName"`
+	ProjectStartDate *time.Time `bson:"projectStartDate" json:"projectStartDate"`
+	ProjectEndDate   *time.Time `bson:"projectEndDate"`
+	ClassName        string     `bson:"className"`
+	Views            []string   `bson:"views"`
 }
 
 type CreateInvite struct {
@@ -114,6 +133,7 @@ type MyProject struct {
 	ProjectId        primitive.ObjectID `bson:"_id,omitempty" json:"projectId"`
 	ProjectProfile   ProjectProfile     `bson:"projectProfile" json:"projectProfile"`
 	Members          []Member           `bson:"members" json:"members"`
+	ClassName        string             `bson:"className" json:"className"`
 	ProjectStartDate *time.Time         `bson:"projectStartDate" json:"projectStartDate"`
 	ProjectEndDate   *time.Time         `bson:"projectEndDate" json:"projectEndDate"`
 }
@@ -124,11 +144,17 @@ type AllMemberProject struct {
 	Invites []Invite `bson:"invites"  json:"invites"`
 }
 
+type AllMemberAndPermission struct {
+	AllMemberProject  AllMemberProject  `bson:"allMemberProject" json:"allMemberProject"`
+	MembersPermission MembersPermission `bson:"membersPermission" json:"membersPermission"`
+}
+
 type AllTasksMyProject struct {
 	ProjectId        primitive.ObjectID `bson:"_id,omitempty" json:"id"`
 	ProjectProfile   ProjectProfile     `bson:"projectProfile" json:"projectProfile"`
 	ProjectStartDate *time.Time         `bson:"projectStartDate" json:"projectStartDate"`
 	ProjectEndDate   *time.Time         `bson:"projectEndDate" json:"projectEndDate"`
+	ClassName        string             `bson:"className" json:"className"`
 	CreatedAt        *time.Time         `bson:"createdAt" json:"createdAt"`
 	UpdatedAt        *time.Time         `bson:"updatedAt" json:"updatedAt"`
 	Process          []Process          `bson:"process" json:"process"`
