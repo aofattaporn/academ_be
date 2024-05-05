@@ -134,6 +134,7 @@ type MyProject struct {
 	ProjectProfile   ProjectProfile     `bson:"projectProfile" json:"projectProfile"`
 	Members          []Member           `bson:"members" json:"members"`
 	ClassName        string             `bson:"className" json:"className"`
+	IsArchive        bool               `bson:"isArchive"  json:"isArchive"`
 	ProjectStartDate *time.Time         `bson:"projectStartDate" json:"projectStartDate"`
 	ProjectEndDate   *time.Time         `bson:"projectEndDate" json:"projectEndDate"`
 }
@@ -158,4 +159,5 @@ type AllTasksMyProject struct {
 	CreatedAt        *time.Time         `bson:"createdAt" json:"createdAt"`
 	UpdatedAt        *time.Time         `bson:"updatedAt" json:"updatedAt"`
 	Process          []Process          `bson:"process" json:"process"`
+	IsArchive        bool               `bson:"isArchive"  json:"isArchive"`
 }
