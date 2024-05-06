@@ -343,3 +343,110 @@ func RemoveMember(c *gin.Context, projectId string, memberId string) (err error)
 
 	return nil
 }
+
+func UpdateProcessByID(c *gin.Context, projectID string, processID string, process models.Process) (err error) {
+	ctx, cancel := context.WithTimeout(c, 5*time.Second)
+	defer cancel()
+
+	// Convert projectID and processID to ObjectIDs
+	objID, err := primitive.ObjectIDFromHex(projectID)
+	if err != nil {
+		return fmt.Errorf("invalid project ID: %v", err)
+	}
+
+	procID, err := primitive.ObjectIDFromHex(processID)
+	if err != nil {
+		return fmt.Errorf("invalid process ID: %v", err)
+	}
+
+	// Define the filter to match the project and process IDs
+	filter := bson.M{"_id": objID, "process.processId": procID}
+
+	// Define the update to set the new process data
+	update := bson.M{
+		"$set": bson.M{
+			"process.$.processName":  process.ProcessName,
+			"process.$.processColor": process.ProcessColor,
+		},
+	}
+
+	// Perform the update on the PROJECT_COLLECTION
+	result, err := configs.GetCollection(mongoClient, PROJECT_COLLECTION).UpdateOne(ctx, filter, update)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return fmt.Errorf("project or process not found")
+		}
+		return fmt.Errorf("error updating process: %v", err)
+	}
+
+	if result.ModifiedCount == 0 {
+		return fmt.Errorf("process not found in the project")
+	}
+
+	return nil
+}
+
+func DeleteProcessbyId(c *gin.Context, projectId string, processId string) (err error) {
+	ctx, cancel := context.WithTimeout(c, 5*time.Second)
+	defer cancel()
+
+	objID, err := primitive.ObjectIDFromHex(projectId)
+	if err != nil {
+		return fmt.Errorf("invalid project ID: %v", err)
+	}
+
+	processID, err := primitive.ObjectIDFromHex(processId)
+	if err != nil {
+		return fmt.Errorf("invalid process ID: %v", err)
+	}
+
+	filter := bson.M{"_id": objID}
+	update := bson.M{"$pull": bson.M{"process": bson.M{"processId": processID}}}
+
+	// Perform the update on the PROJECT_COLLECTION
+	_, err = configs.GetCollection(mongoClient, PROJECT_COLLECTION).UpdateOne(ctx, filter, update)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return fmt.Errorf("project not found")
+		}
+		return fmt.Errorf("error updating project: %v", err)
+	}
+
+	return nil
+
+}
+
+func CreateProcessByID(c *gin.Context, projectID string, process models.Process) (err error) {
+	ctx, cancel := context.WithTimeout(c, 5*time.Second)
+	defer cancel()
+
+	// Convert projectID to ObjectID
+	objID, err := primitive.ObjectIDFromHex(projectID)
+	if err != nil {
+		return fmt.Errorf("invalid project ID: %v", err)
+	}
+
+	// Generate a new process ID
+	processID := primitive.NewObjectID()
+
+	// Define the filter to match the project
+	filter := bson.M{"_id": objID}
+
+	// Define the update to push the new process
+	update := bson.M{"$push": bson.M{"process": bson.M{
+		"processId":    processID,
+		"processName":  process.ProcessName,
+		"processColor": process.ProcessColor,
+	}}}
+
+	// Perform the update on the PROJECT_COLLECTION
+	_, err = configs.GetCollection(mongoClient, PROJECT_COLLECTION).UpdateOne(ctx, filter, update)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return fmt.Errorf("project not found")
+		}
+		return fmt.Errorf("error creating process: %v", err)
+	}
+
+	return nil
+}

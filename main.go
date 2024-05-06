@@ -77,6 +77,11 @@ func setupRouter() *gin.Engine {
 			projects.GET("/:projectId/details", handlers.GetProjectDetails)
 			projects.PUT("/:projectId/details", handlers.UpdateProjectDetails)
 
+			// Routes related to process
+			projects.POST(":projectId/process", handlers.CreateNewProcess)
+			projects.PUT(":projectId/process/:processId", handlers.UpdateProcess)
+			projects.DELETE(":projectId/process/:processId", handlers.DeleteProcess)
+
 			// Routes related to project invites
 			projects.POST("/:projectId/invites", handlers.InviteNewMember)
 			projects.DELETE("/:projectId/invites/:inviteId", handlers.DeleteInviteMember)
