@@ -81,7 +81,7 @@ func GetProjectsByMemberUserID(c *gin.Context, myUserID string) (projects []mode
 	filter := bson.M{"members": bson.M{"$elemMatch": bson.M{"userId": myUserID}}}
 
 	// Define options to specify fields to include
-	projection := bson.M{"_id": 1, "projectProfile": 1, "members": 1, "projectStartDate": 1, "projectEndDate": 1, "isArchive": 1}
+	projection := bson.M{"_id": 1, "projectProfile": 1, "members": 1, "projectStartDate": 1, "projectEndDate": 1, "isArchive": 1, "className": 1}
 	opts := options.Find().SetProjection(projection)
 
 	// Find projects matching the filter
