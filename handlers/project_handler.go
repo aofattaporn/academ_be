@@ -44,6 +44,7 @@ func GetProjectById(c *gin.Context) {
 	}
 
 	projectInfo := models.ProjectInfoPermission{
+		NavigateView:      project.Views[0],
 		ProjectInfo:       *project,
 		TaskPermission:    permission.Task,
 		ProjectPermission: permission.Project,
@@ -289,8 +290,6 @@ func UpdateProjectDetails(c *gin.Context) {
 		handleBussinessError(c, "Can't to find your Tasks ID")
 	}
 
-	// update-project
-
 	var projectUpdate models.ProjectDetails
 	if err := c.BindJSON(&projectUpdate); err != nil {
 		handleBussinessError(c, err.Error())
@@ -316,6 +315,7 @@ func UpdateProjectDetails(c *gin.Context) {
 	}
 
 	projectInfo := models.ProjectInfoPermission{
+		NavigateView:      project.Views[0],
 		ProjectInfo:       *project,
 		TaskPermission:    permission.Task,
 		ProjectPermission: permission.Project,
@@ -420,6 +420,7 @@ func ArchiveProjectById(c *gin.Context) {
 	}
 
 	projectInfo := models.ProjectInfoPermission{
+		NavigateView:      project.Views[0],
 		ProjectInfo:       *project,
 		TaskPermission:    permission.Task,
 		ProjectPermission: permission.Project,

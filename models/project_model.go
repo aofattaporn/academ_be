@@ -28,6 +28,7 @@ type Project struct {
 }
 
 type ProjectInfoPermission struct {
+	NavigateView      string            `bson:"navigateView" json:"navigateView"`
 	ProjectInfo       ProjectInfo       `bson:"projectInfo" json:"projectInfo"`
 	TaskPermission    TaskPermission    `bson:"taskPermission" json:"taskPermission"`
 	ProjectPermission ProjectPermission `bson:"projectPermission" json:"projectPermission"`

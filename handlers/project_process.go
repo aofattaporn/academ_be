@@ -14,11 +14,16 @@ func UpdateProcess(c *gin.Context) {
 
 	projectId := c.Param("projectId")
 	if projectId == "" {
-		handleBussinessError(c, "Can't to find your Tasks ID")
+		handleBussinessError(c, "Can't to find your Project ID")
 	}
 
 	processId := c.Param("processId")
 	if processId == "" {
+		handleBussinessError(c, "Can't to find your Process ID")
+	}
+
+	viewName := c.Param("viewName")
+	if viewName == "" {
 		handleBussinessError(c, "Can't to find your Tasks ID")
 	}
 
@@ -47,6 +52,7 @@ func UpdateProcess(c *gin.Context) {
 	}
 
 	projectInfo := models.ProjectInfoPermission{
+		NavigateView:      viewName,
 		ProjectInfo:       *project,
 		TaskPermission:    permission.Task,
 		ProjectPermission: permission.Project,
@@ -70,6 +76,11 @@ func DeleteProcess(c *gin.Context) {
 		handleBussinessError(c, "Can't to find your Tasks ID")
 	}
 
+	viewName := c.Param("viewName")
+	if viewName == "" {
+		handleBussinessError(c, "Can't to find your Tasks ID")
+	}
+
 	err := services.DeleteProcessbyId(c, projectId, processId)
 	if err != nil {
 		handleTechnicalError(c, err.Error())
@@ -89,6 +100,7 @@ func DeleteProcess(c *gin.Context) {
 	}
 
 	projectInfo := models.ProjectInfoPermission{
+		NavigateView:      viewName,
 		ProjectInfo:       *project,
 		TaskPermission:    permission.Task,
 		ProjectPermission: permission.Project,
@@ -104,18 +116,18 @@ func CreateNewProcess(c *gin.Context) {
 
 	projectId := c.Param("projectId")
 	if projectId == "" {
-		handleBussinessError(c, "Can't to find your Tasks ID")
-	}
-
-	processId := c.Param("processId")
-	if processId == "" {
-		handleBussinessError(c, "Can't to find your Tasks ID")
+		handleBussinessError(c, "Can't to find your Project ID")
 	}
 
 	var updaateProcess models.Process
 	if err := c.BindJSON(&updaateProcess); err != nil {
 		handleBussinessError(c, err.Error())
 		return
+	}
+
+	viewName := c.Param("viewName")
+	if viewName == "" {
+		handleBussinessError(c, "Can't to find your Tasks ID")
 	}
 
 	err := services.CreateProcessByID(c, projectId, updaateProcess)
@@ -137,6 +149,7 @@ func CreateNewProcess(c *gin.Context) {
 	}
 
 	projectInfo := models.ProjectInfoPermission{
+		NavigateView:      viewName,
 		ProjectInfo:       *project,
 		TaskPermission:    permission.Task,
 		ProjectPermission: permission.Project,
