@@ -24,8 +24,10 @@ import (
 	"academ_be/handlers"
 	"academ_be/middlewares"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-co-op/gocron"
 
 	_ "academ_be/docs"
 
@@ -43,6 +45,10 @@ func setupRouter() *gin.Engine {
 
 	// Middlewares
 	router.Use(middlewares.CORSMiddleware())
+
+	// Cron Handler
+	cron := gocron.NewScheduler(time.UTC)
+	handlers.CronJobHander(cron)
 
 	v1 := router.Group("/api/v1")
 	{

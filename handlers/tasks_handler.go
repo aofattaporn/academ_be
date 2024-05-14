@@ -3,6 +3,7 @@ package handlers
 import (
 	"academ_be/models"
 	"academ_be/services"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -160,23 +161,25 @@ func UpdateTasks(c *gin.Context) {
 	// Return success response
 	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_TASKS_SUCCESS, updateTasks)
 
-	// // push noti
-	// if updateTasks.Assignee != nil && updateTasks.Assignee.UserId != "" {
-	// 	project, err := services.GetProjectById(c, newData.ProjectId)
-	// 	if err != nil {
-	// 		handleTechnicalError(c, err.Error())
-	// 		return
-	// 	}
+	// push noti on assignee
+	if updateTasks.Assignee != nil && updateTasks.Assignee.UserId != "" {
+		project, err := services.GetProjectById(c, updateTasks.ProjectId)
+		if err != nil {
+			handleTechnicalError(c, err.Error())
+			return
+		}
 
-	// 	sendNotificationByUserId(c, updateTasks.Assignee.UserId, &project.ProjectProfile)
+		// Sent Notification on browser
+		sendNotificationByUserId(c, updateTasks.Assignee.UserId, &project.ProjectProfile)
 
-	// 	invitationToken := generateInvitationToken()
-	// 	err = sendInvite(updateTasks.Assignee.Emaill, project.ProjectProfile.ProjectName, invitationToken)
-	// 	if err != nil {
-	// 		handleTechnicalError(c, err.Error())
-	// 		return
-	// 	}
-	// }
+		// Sent Notification on email
+		invitationToken := generateInvitationToken()
+		err = sendInvite(updateTasks.Assignee.Emaill, project.ProjectProfile.ProjectName, invitationToken)
+		if err != nil {
+			handleTechnicalError(c, err.Error())
+			return
+		}
+	}
 }
 
 // DeleteTasksById godoc
@@ -247,10 +250,15 @@ func GetAllTasksHomePage(c *gin.Context) {
 
 func sendNotificationByUserId(c *gin.Context, userId string, projectProfile *models.ProjectProfile) {
 
+	fmt.Println("Send noti start")
 	fcm, err := services.FindFCMByMember(c, userId)
 	if err != nil {
+		fmt.Println(err)
+
 		return
 	}
+	fmt.Println(fcm)
+	fmt.Println("Send noti end")
 
 	now := time.Now()
 	noti := models.Notification{
@@ -269,7 +277,32 @@ func sendNotificationByUserId(c *gin.Context, userId string, projectProfile *mod
 	}
 
 }
+func sendNotificationByUserIdCron(userId string, projectProfile *models.ProjectProfile) {
 
-func sendEmailByUserId() {
+	fmt.Println("Send noti start")
+	fcm, err := services.FindFCMByMemberCron(userId)
+	if err != nil {
+		fmt.Println(err)
+
+		return
+	}
+	fmt.Println(fcm)
+	fmt.Println("Send noti end")
+
+	now := time.Now()
+	noti := models.Notification{
+		UserId:         userId,
+		ProjectProfile: *projectProfile,
+		Title:          "Project Assignee",
+		Body:           "You are assigned a tasks",
+		Date:           &now,
+		IsClear:        false,
+	}
+
+	err = services.AddNotificationCron(fcm.FCM_TOKEN, noti)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 
 }

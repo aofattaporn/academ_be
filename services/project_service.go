@@ -73,6 +73,45 @@ func GetProjectByUserId(c *gin.Context, userId string) (projects []models.AllTas
 
 }
 
+func GetAllProjectCron() (projects []models.ProjectCron, err error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	// Define options to specify fields to include
+	projection := bson.M{
+		"_id":              1,
+		"projectProfile":   1,
+		"projectStartDate": 1,
+		"projectEndDate":   1,
+		"isArchive":        1,
+		"roles":            1,
+		"members":          1,
+	}
+	opts := options.Find().SetProjection(projection)
+
+	// Find projects matching the filter (empty filter to get all documents)
+	cursor, err := configs.GetCollection(mongoClient, PROJECT_COLLECTION).Find(ctx, bson.M{}, opts)
+	if err != nil {
+		return nil, fmt.Errorf("error finding projects: %v", err)
+	}
+	defer func() {
+		if err := cursor.Close(ctx); err != nil {
+			fmt.Printf("error closing cursor: %v\n", err)
+		}
+	}()
+
+	// Decode projects directly into the result slice
+	if err := cursor.All(ctx, &projects); err != nil {
+		return nil, fmt.Errorf("error decoding projects: %v", err)
+	}
+
+	// Optional: Log the projects if needed for debugging
+	fmt.Println(projects)
+	fmt.Println("==============")
+
+	return projects, nil
+}
+
 func GetProjectsByMemberUserID(c *gin.Context, myUserID string) (projects []models.MyProject, err error) {
 	ctx, cancel := context.WithTimeout(c, 5*time.Second)
 	defer cancel()

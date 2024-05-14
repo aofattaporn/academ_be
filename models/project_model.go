@@ -130,6 +130,17 @@ type CreateInvite struct {
 // --------------- GET Project Models --------------------
 // ----------------------------------------------------------
 
+type ProjectCron struct {
+	ProjectId        primitive.ObjectID `bson:"_id,omitempty" json:"projectId"`
+	ProjectProfile   ProjectProfile     `bson:"projectProfile" json:"projectProfile"`
+	Members          []Member           `bson:"members" json:"members"`
+	ClassName        string             `bson:"className" json:"className"`
+	IsArchive        bool               `bson:"isArchive"  json:"isArchive"`
+	ProjectStartDate *time.Time         `bson:"projectStartDate" json:"projectStartDate"`
+	ProjectEndDate   *time.Time         `bson:"projectEndDate" json:"projectEndDate"`
+	Roles            []Role             `bson:"roles"  json:"roles"`
+}
+
 type MyProject struct {
 	ProjectId        primitive.ObjectID `bson:"_id,omitempty" json:"projectId"`
 	ProjectProfile   ProjectProfile     `bson:"projectProfile" json:"projectProfile"`

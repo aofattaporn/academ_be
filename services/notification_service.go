@@ -5,6 +5,7 @@ import (
 	"academ_be/models"
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"firebase.google.com/go/messaging"
@@ -15,6 +16,7 @@ import (
 
 func FindFCMByMember(c *gin.Context, userId string) (fcm *models.FCM, err error) {
 
+	fmt.Println(userId)
 	ctx, cancel := context.WithTimeout(c, 5*time.Second)
 	defer cancel()
 
@@ -26,6 +28,31 @@ func FindFCMByMember(c *gin.Context, userId string) (fcm *models.FCM, err error)
 	}
 
 	if fcm.FCM_TOKEN == "" {
+		fmt.Println("not found fcm")
+
+		return nil, errors.New("not found fcm")
+	}
+
+	return fcm, nil
+
+}
+
+func FindFCMByMemberCron(userId string) (fcm *models.FCM, err error) {
+
+	fmt.Println(userId)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	filter := bson.M{"_id": userId}
+
+	err = configs.GetCollection(mongoClient, USER_COLLECTION).FindOne(ctx, filter).Decode(&fcm)
+	if err != nil {
+		return nil, err
+	}
+
+	if fcm.FCM_TOKEN == "" {
+		fmt.Println("not found fcm")
+
 		return nil, errors.New("not found fcm")
 	}
 
@@ -46,6 +73,55 @@ func AddNotification(c *gin.Context, fcmToken string, noti models.Notification) 
 	PushNotification(c, fcmToken, noti)
 
 	return nil
+
+}
+
+func AddNotificationCron(fcmToken string, noti models.Notification) (err error) {
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	_, err = configs.GetCollection(mongoClient, NOTIFICATION_COLLECTION).InsertOne(ctx, noti)
+	if err != nil {
+		return err
+	}
+
+	PushNotificationCron(fcmToken, noti)
+
+	return nil
+
+}
+
+func PushNotificationCron(fcmToken string, noti models.Notification) {
+
+	client := configs.CreateMessageCron()
+
+	data := map[string]string{
+		"ProjectName": noti.ProjectProfile.ProjectName,
+		"AvatarColor": noti.ProjectProfile.AvatarColor,
+		"Title":       noti.Title,
+		"Body":        noti.Body,
+		"Date":        noti.Date.String(),
+	}
+
+	message := &messaging.Message{
+		Notification: &messaging.Notification{
+			Title: noti.Title,
+			Body:  noti.Body,
+		},
+		Data:  data,
+		Token: fcmToken,
+		Webpush: &messaging.WebpushConfig{
+			FcmOptions: &messaging.WebpushFcmOptions{
+				Link: "https://localhost:5173/",
+			},
+		},
+	}
+
+	_, err := client.Send(context.Background(), message)
+	if err != nil {
+		return
+	}
 
 }
 
