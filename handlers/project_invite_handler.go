@@ -40,10 +40,6 @@ func sendInvite(email, projectName, token string) error {
 	mimeHeaders := "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";\n\n"
 	body.Write([]byte(fmt.Sprintf("Subject: Invitation to our Event\n%s\n\n", mimeHeaders)))
 
-	// TODO : Send Mail Invited Project
-
-	// TODO : Send Mail Tasks Update
-
 	t, err := template.ParseFiles("template.html")
 	if err != nil {
 		return errors.New("Can't to send this eamil")

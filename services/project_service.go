@@ -320,8 +320,7 @@ func RemoveProjectInviteFromAccept(c *gin.Context, token string) (*primitive.Obj
 		return nil, nil, fmt.Errorf("error updating project: %v", err)
 	}
 
-	var projectId *primitive.ObjectID
-	projectId = &project.ProjectId
+	var projectId *primitive.ObjectID = &project.ProjectId
 	var invite *models.Invite
 	for i, inv := range project.Invites {
 		if inv.Token == token {

@@ -4,7 +4,6 @@ import (
 	"academ_be/configs"
 	"academ_be/models"
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
@@ -14,32 +13,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func FindFCMByMember(c *gin.Context, userId string) (fcm *models.FCM, err error) {
+func FindFCMByMember(userId string) (fcm *models.FCM, err error) {
 
-	fmt.Println(userId)
-	ctx, cancel := context.WithTimeout(c, 5*time.Second)
-	defer cancel()
-
-	filter := bson.M{"_id": userId}
-
-	err = configs.GetCollection(mongoClient, USER_COLLECTION).FindOne(ctx, filter).Decode(&fcm)
-	if err != nil {
-		return nil, err
-	}
-
-	if fcm.FCM_TOKEN == "" {
-		fmt.Println("not found fcm")
-
-		return nil, errors.New("not found fcm")
-	}
-
-	return fcm, nil
-
-}
-
-func FindFCMByMemberCron(userId string) (fcm *models.FCM, err error) {
-
-	fmt.Println(userId)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -50,33 +25,11 @@ func FindFCMByMemberCron(userId string) (fcm *models.FCM, err error) {
 		return nil, err
 	}
 
-	if fcm.FCM_TOKEN == "" {
-		fmt.Println("not found fcm")
-
-		return nil, errors.New("not found fcm")
-	}
-
 	return fcm, nil
 
 }
 
-func AddNotification(c *gin.Context, fcmToken string, noti models.Notification) (err error) {
-
-	ctx, cancel := context.WithTimeout(c, 5*time.Second)
-	defer cancel()
-
-	_, err = configs.GetCollection(mongoClient, NOTIFICATION_COLLECTION).InsertOne(ctx, noti)
-	if err != nil {
-		return err
-	}
-
-	PushNotification(c, fcmToken, noti)
-
-	return nil
-
-}
-
-func AddNotificationCron(fcmToken string, noti models.Notification) (err error) {
+func AddNotification(fcmToken string, noti models.Notification) (err error) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -86,7 +39,7 @@ func AddNotificationCron(fcmToken string, noti models.Notification) (err error) 
 		return err
 	}
 
-	PushNotificationCron(fcmToken, noti)
+	PushNotification(fcmToken, noti)
 
 	return nil
 
@@ -94,7 +47,7 @@ func AddNotificationCron(fcmToken string, noti models.Notification) (err error) 
 
 func PushNotificationCron(fcmToken string, noti models.Notification) {
 
-	client := configs.CreateMessageCron()
+	client := configs.CreateMessage()
 
 	data := map[string]string{
 		"ProjectName": noti.ProjectProfile.ProjectName,
@@ -125,9 +78,9 @@ func PushNotificationCron(fcmToken string, noti models.Notification) {
 
 }
 
-func PushNotification(c *gin.Context, fcmToken string, noti models.Notification) {
+func PushNotification(fcmToken string, noti models.Notification) {
 
-	client := configs.CreateMessage(c)
+	client := configs.CreateMessage()
 
 	data := map[string]string{
 		"ProjectName": noti.ProjectProfile.ProjectName,
@@ -151,9 +104,9 @@ func PushNotification(c *gin.Context, fcmToken string, noti models.Notification)
 		},
 	}
 
-	_, err := client.Send(c, message)
+	_, err := client.Send(context.Background(), message)
 	if err != nil {
-		c.AbortWithStatusJSON(400, gin.H{"error": err.Error()})
+		fmt.Println(err.Error())
 		return
 	}
 
