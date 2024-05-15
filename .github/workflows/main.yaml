@@ -11,7 +11,8 @@ jobs:
     permissions:
       deployments: write
     steps:
-      - uses: YuKitsune/template-cli@v0.1.0
+      - name: deplot render
+      - uses: johnbeynon/render-deploy-action@v0.0.8
         with:
           service_id: ${{ secrets.RENDER_SERVICE_ID }}
           api_key: ${{ secrets.RENDER_API_KEY }}
