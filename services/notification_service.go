@@ -45,39 +45,6 @@ func AddNotification(fcmToken string, noti models.Notification) (err error) {
 
 }
 
-func PushNotificationCron(fcmToken string, noti models.Notification) {
-
-	client := configs.CreateMessage()
-
-	data := map[string]string{
-		"ProjectName": noti.ProjectProfile.ProjectName,
-		"AvatarColor": noti.ProjectProfile.AvatarColor,
-		"Title":       noti.Title,
-		"Body":        noti.Body,
-		"Date":        noti.Date.String(),
-	}
-
-	message := &messaging.Message{
-		Notification: &messaging.Notification{
-			Title: noti.Title,
-			Body:  noti.Body,
-		},
-		Data:  data,
-		Token: fcmToken,
-		Webpush: &messaging.WebpushConfig{
-			FcmOptions: &messaging.WebpushFcmOptions{
-				Link: "https://academ-fe.onrender.com/",
-			},
-		},
-	}
-
-	_, err := client.Send(context.Background(), message)
-	if err != nil {
-		return
-	}
-
-}
-
 func PushNotification(fcmToken string, noti models.Notification) {
 
 	client := configs.CreateMessage()
@@ -108,6 +75,8 @@ func PushNotification(fcmToken string, noti models.Notification) {
 	if err != nil {
 		fmt.Println(err.Error())
 		return
+	} else {
+		fmt.Println("Sent succuss")
 	}
 
 }
