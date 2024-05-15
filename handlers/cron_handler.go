@@ -11,11 +11,6 @@ import (
 
 func CronJobHander(cron *gocron.Scheduler) {
 
-	// every 10 for test
-	// cron.CronWithSeconds("*/10 * * * * *").Do(func() {
-	// 	fmt.Println("Test CronJob")
-	// })
-
 	// 10 am every days
 	cron.CronWithSeconds("0 0 10  * * *").Do(func() {
 
