@@ -66,7 +66,7 @@ func PushNotificationCron(fcmToken string, noti models.Notification) {
 		Token: fcmToken,
 		Webpush: &messaging.WebpushConfig{
 			FcmOptions: &messaging.WebpushFcmOptions{
-				Link: "https://localhost:5173/",
+				Link: "https://academ-fe.onrender.com/",
 			},
 		},
 	}
