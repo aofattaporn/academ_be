@@ -16,7 +16,7 @@ type NotificationRes struct {
 	ProjectProfile ProjectProfile `bson:"projectProfile" json:"projectProfile"`
 	UserId         string         `bson:"userId" json:"userId"`
 	Title          string         `bson:"title" json:"title"`
-	Body           string         `bson:"Body" json:"Body"`
+	Body           string         `bson:"Body" json:"body"`
 	Date           *time.Time     `bson:"date" json:"date"`
 	IsClear        bool           `bson:"isClear" json:"isClear"`
 }
