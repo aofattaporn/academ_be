@@ -76,8 +76,6 @@ func PushNotification(fcmToken string, noti models.Notification) {
 	if err != nil {
 		fmt.Println(err.Error())
 		return
-	} else {
-		fmt.Println("Sent succuss")
 	}
 
 }

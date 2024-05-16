@@ -40,7 +40,7 @@ func sendInvite(email, projectName, token string, emailLocate string, linkRelate
 	mimeHeaders := "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";\n\n"
 	body.Write([]byte(fmt.Sprintf("Subject: Invitation to our Event\n%s\n\n", mimeHeaders)))
 
-	t, err := template.ParseFiles("email/template.html")
+	t, err := template.ParseFiles(emailLocate)
 	if err != nil {
 		return errors.New("Can't to send this eamil")
 	}
@@ -52,7 +52,7 @@ func sendInvite(email, projectName, token string, emailLocate string, linkRelate
 	}{
 		Name:        email,
 		ProjectName: projectName,
-		AcceptLink:  "http://localhost:5173/join-project/?token=" + token,
+		AcceptLink:  linkRelate,
 	})
 
 	// Sending email.
