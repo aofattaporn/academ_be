@@ -19,7 +19,7 @@ func generateInvitationToken() string {
 	return uuid.New().String()
 }
 
-func sendInvite(email, projectName, token string) error {
+func sendInvite(email, projectName, token string, emailLocate string, linkRelate string) error {
 
 	// Sender data.
 	from := "academ.projex@gmail.com"
@@ -92,7 +92,10 @@ func InviteNewMember(c *gin.Context) {
 		return
 	}
 
-	err = sendInvite(inviteReq.InviteEmail, project.ProjectProfile.ProjectName, invitationToken)
+	err = sendInvite(inviteReq.InviteEmail,
+		project.ProjectProfile.ProjectName,
+		invitationToken, "email/eInviteMember.html",
+		"https://academ-fe.onrender.com/join-project/?token="+invitationToken)
 	if err != nil {
 		handleTechnicalError(c, err.Error())
 		return

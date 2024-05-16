@@ -39,8 +39,11 @@ func CronJobHander(cron *gocron.Scheduler) {
 							NOTI_HEADER_PROJECT_DEADLINE,
 							NOTI_BODY_PROJECT_DEADLINE)
 
-						invitationToken := generateInvitationToken()
-						sendInvite(m.Emaill, mp.ProjectProfile.ProjectName, invitationToken)
+						sendInvite(m.Emaill,
+							mp.ProjectProfile.ProjectName,
+							"",
+							"email/eProjectDeadlineAlert.html",
+							"https://academ-fe.onrender.com")
 
 					}
 				}

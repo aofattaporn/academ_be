@@ -176,8 +176,11 @@ func UpdateTasks(c *gin.Context) {
 			NOTI_BODY_TASKS_UPDATED)
 
 		// Sent Notification on email
-		invitationToken := generateInvitationToken()
-		err = sendInvite(updateTasks.Assignee.Emaill, project.ProjectProfile.ProjectName, invitationToken)
+		err = sendInvite(updateTasks.Assignee.Emaill,
+			project.ProjectProfile.ProjectName,
+			"",
+			"email/eTasksUpdate.html",
+			"https://academ-fe.onrender.com")
 		if err != nil {
 			handleTechnicalError(c, err.Error())
 			return
