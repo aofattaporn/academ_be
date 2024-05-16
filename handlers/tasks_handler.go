@@ -170,7 +170,10 @@ func UpdateTasks(c *gin.Context) {
 		}
 
 		// Sent Notification on browser
-		sendNotificationByUserId(updateTasks.Assignee.UserId, &project.ProjectProfile)
+		sendNotificationByUserId(updateTasks.Assignee.UserId,
+			&project.ProjectProfile,
+			NOTI_HEADER_TASKS_UPDATED,
+			NOTI_BODY_TASKS_UPDATED)
 
 		// Sent Notification on email
 		invitationToken := generateInvitationToken()
@@ -248,7 +251,7 @@ func GetAllTasksHomePage(c *gin.Context) {
 
 }
 
-func sendNotificationByUserId(userId string, projectProfile *models.ProjectProfile) {
+func sendNotificationByUserId(userId string, projectProfile *models.ProjectProfile, notiHeader string, notiBody string) {
 
 	fcm, err := services.FindFCMByMember(userId)
 	if err != nil {
@@ -261,8 +264,8 @@ func sendNotificationByUserId(userId string, projectProfile *models.ProjectProfi
 	noti := models.Notification{
 		UserId:         userId,
 		ProjectProfile: *projectProfile,
-		Title:          "Project Assignee",
-		Body:           "You are assigned a tasks",
+		Title:          notiHeader,
+		Body:           notiBody,
 		Date:           &now,
 		IsClear:        false,
 	}

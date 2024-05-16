@@ -39,6 +39,7 @@ func AddNotification(fcmToken string, noti models.Notification) (err error) {
 		return err
 	}
 
+	// push to webclient
 	PushNotification(fcmToken, noti)
 
 	return nil

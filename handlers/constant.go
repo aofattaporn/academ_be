@@ -51,6 +51,12 @@ const (
 	TOKEN     string = "token"
 	USER_ID   string = "userID"
 	USER_NAME string = "userName"
+
+	// Notification
+	NOTI_HEADER_TASKS_UPDATED    string = "Tasks Assignee"
+	NOTI_BODY_TASKS_UPDATED      string = "The tasks you assigned have been updated"
+	NOTI_HEADER_PROJECT_DEADLINE string = "Project Deadline Alert"
+	NOTI_BODY_PROJECT_DEADLINE   string = "This project is approaching its deadline."
 )
 
 var DEFULT_COLORS = []string{

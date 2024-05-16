@@ -34,7 +34,10 @@ func CronJobHander(cron *gocron.Scheduler) {
 				for _, m := range mp.Members {
 					if m.RoleId == ownerId && ownerId != primitive.NilObjectID {
 
-						sendNotificationByUserId(m.UserId, &mp.ProjectProfile)
+						sendNotificationByUserId(m.UserId,
+							&mp.ProjectProfile,
+							NOTI_HEADER_PROJECT_DEADLINE,
+							NOTI_BODY_PROJECT_DEADLINE)
 
 						invitationToken := generateInvitationToken()
 						sendInvite(m.Emaill, mp.ProjectProfile.ProjectName, invitationToken)
