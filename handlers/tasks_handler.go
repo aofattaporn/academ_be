@@ -170,10 +170,11 @@ func UpdateTasks(c *gin.Context) {
 		}
 
 		// Sent Notification on browser
-		sendNotificationByUserId(updateTasks.Assignee.UserId,
+		sendNotificationByUserId(
+			updateTasks.Assignee.UserId,
 			&project.ProjectProfile,
 			NOTI_HEADER_TASKS_UPDATED,
-			NOTI_BODY_TASKS_UPDATED)
+			NOTI_BODY_TASKS_UPDATED+" \""+updateTasks.TasksName+" \"")
 
 		// Sent Notification on email
 		err = sendInvite(
