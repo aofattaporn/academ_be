@@ -4,6 +4,7 @@ import (
 	"academ_be/models"
 	"academ_be/services"
 	"encoding/json"
+	"fmt"
 	"math/rand"
 	"net/http"
 	"time"
@@ -32,9 +33,7 @@ func GetProjectById(c *gin.Context) {
 		handleBussinessError(c, "Can't to find your Tasks ID")
 	}
 
-	// TODO: GET project type *models.ProjectInfo if not found get from service and set project Id
 	var project *models.ProjectInfo
-
 	projectCacheKey := "project:" + projectId
 	cachedProject, err := redisClient.Get(projectCacheKey).Result()
 	if err == redis.Nil {
@@ -60,6 +59,7 @@ func GetProjectById(c *gin.Context) {
 		handleTechnicalError(c, err.Error())
 		return
 	} else {
+		fmt.Println(cachedProject)
 		err = json.Unmarshal([]byte(cachedProject), &project)
 		if err != nil {
 			handleTechnicalError(c, err.Error())
