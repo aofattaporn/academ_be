@@ -3,11 +3,13 @@ package handlers
 import (
 	"academ_be/models"
 	"academ_be/services"
+	"encoding/json"
 	"math/rand"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-redis/redis"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -30,11 +32,39 @@ func GetProjectById(c *gin.Context) {
 		handleBussinessError(c, "Can't to find your Tasks ID")
 	}
 
-	// Retrieve the project by ID
-	project, err := services.GetProjectById(c, projectId)
-	if err != nil {
+	// TODO: GET project type *models.ProjectInfo if not found get from service and set project Id
+	var project *models.ProjectInfo
+
+	projectCacheKey := "project:" + projectId
+	cachedProject, err := redisClient.Get(projectCacheKey).Result()
+	if err == redis.Nil {
+
+		project, err = services.GetProjectById(c, projectId)
+		if err != nil {
+			handleTechnicalError(c, err.Error())
+			return
+		}
+
+		projectData, err := json.Marshal(project)
+		if err != nil {
+			handleTechnicalError(c, err.Error())
+			return
+		}
+		err = redisClient.Set(projectCacheKey, projectData, 5*time.Minute).Err()
+		if err != nil {
+			handleTechnicalError(c, err.Error())
+			return
+		}
+
+	} else if err != nil {
 		handleTechnicalError(c, err.Error())
 		return
+	} else {
+		err = json.Unmarshal([]byte(cachedProject), &project)
+		if err != nil {
+			handleTechnicalError(c, err.Error())
+			return
+		}
 	}
 
 	permission, err := getPermissionIdByUser(c, project, userID)
