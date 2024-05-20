@@ -3,11 +3,13 @@ package handlers
 import (
 	"academ_be/models"
 	"academ_be/services"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-redis/redis"
 )
 
 // GetAllTasks godoc
@@ -22,10 +24,27 @@ import (
 func GetAllTasksByProjectId(c *gin.Context) {
 
 	projectId := c.Param("projectId")
-	tasks, err := services.GetAllTasksByProjectId(c, projectId)
-	if err != nil {
+
+	projectCacheKey := "project:" + projectId
+	cachedProject, err := redisClient.Get(projectCacheKey).Result()
+
+	var tasks []models.Tasks
+
+	if err == redis.Nil {
+		tasks, err = services.GetAllTasksByProjectId(c, projectId)
+		if err != nil {
+			handleTechnicalError(c, err.Error())
+			return
+		}
+	} else if err != nil {
 		handleTechnicalError(c, err.Error())
 		return
+	} else {
+		err = json.Unmarshal([]byte(cachedProject), &tasks)
+		if err != nil {
+			handleTechnicalError(c, err.Error())
+			return
+		}
 	}
 
 	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_TASKS_SUCCESS, tasks)
@@ -62,6 +81,13 @@ func CreateTasks(c *gin.Context) {
 
 	// Return success response
 	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_TASKS_SUCCESS, tasks)
+
+	projectCacheKey := "project:" + createTasks.ProjectId
+	_, err = redisClient.Del(projectCacheKey).Result()
+	if err != nil {
+		handleTechnicalError(c, err.Error())
+		return
+	}
 
 }
 
@@ -188,6 +214,14 @@ func UpdateTasks(c *gin.Context) {
 			return
 		}
 	}
+
+	projectCacheKey := "project:" + updateTasks.ProjectId
+	_, err = redisClient.Del(projectCacheKey).Result()
+	if err != nil {
+		handleTechnicalError(c, err.Error())
+		return
+	}
+
 }
 
 // DeleteTasksById godoc
