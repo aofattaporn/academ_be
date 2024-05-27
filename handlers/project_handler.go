@@ -256,45 +256,46 @@ func GetProjectDetails(c *gin.Context) {
 		handleBussinessError(c, "Can't to find your Tasks ID")
 	}
 
-	projectCacheKey := "project:" + projectId
+	projectCacheKey := "projectDetails:" + projectId
 	cachedProject, err := redisClient.Get(projectCacheKey).Result()
 
-	var project *models.ProjectInfo
+	var projectDetailsPermission models.ProjectDetailsPermission
 	if err == redis.Nil {
-		project, err = services.GetProjectById(c, projectId)
+		project, err := services.GetProjectById(c, projectId)
 		if err != nil {
 			handleTechnicalError(c, err.Error())
 			return
 		}
+
+		permission, err := getPermissionIdByUser(c, project, userID)
+		if err != nil {
+			handleTechnicalError(c, err.Error())
+			return
+		}
+
+		projectDetails := models.ProjectDetails{
+			ProjectId:        project.ProjectId,
+			ProjectProfile:   project.ProjectProfile,
+			ClassName:        project.ClassName,
+			Views:            project.Views,
+			ProjectStartDate: project.ProjectStartDate,
+			ProjectEndDate:   project.ProjectEndDate,
+		}
+
+		projectDetailsPermission = models.ProjectDetailsPermission{
+			ProjectDetails:    projectDetails,
+			ProjectPermission: permission.Project,
+		}
+
 	} else if err != nil {
 		handleTechnicalError(c, err.Error())
 		return
 	} else {
-		err = json.Unmarshal([]byte(cachedProject), &project)
+		err = json.Unmarshal([]byte(cachedProject), &projectDetailsPermission)
 		if err != nil {
 			handleTechnicalError(c, err.Error())
 			return
 		}
-	}
-
-	permission, err := getPermissionIdByUser(c, project, userID)
-	if err != nil {
-		handleTechnicalError(c, err.Error())
-		return
-	}
-
-	projectDetails := models.ProjectDetails{
-		ProjectId:        project.ProjectId,
-		ProjectProfile:   project.ProjectProfile,
-		ClassName:        project.ClassName,
-		Views:            project.Views,
-		ProjectStartDate: project.ProjectStartDate,
-		ProjectEndDate:   project.ProjectEndDate,
-	}
-
-	projectDetailsPermission := models.ProjectDetailsPermission{
-		ProjectDetails:    projectDetails,
-		ProjectPermission: permission.Project,
 	}
 
 	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_PROJECT_SUCCESS, projectDetailsPermission)
@@ -342,7 +343,7 @@ func UpdateProjectDetails(c *gin.Context) {
 
 	handleSuccess(c, http.StatusOK, SUCCESS, GET_MY_PROJECT_SUCCESS, projectInfo)
 
-	projectCacheKey := "project:" + projectId
+	projectCacheKey := "projectDetails:" + projectId
 	_, err = redisClient.Del(projectCacheKey).Result()
 	if err != nil {
 		handleTechnicalError(c, err.Error())
