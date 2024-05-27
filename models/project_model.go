@@ -163,7 +163,7 @@ type AllMemberAndPermission struct {
 }
 
 type AllTasksMyProject struct {
-	ProjectId        primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	ProjectId        primitive.ObjectID `bson:"_id,omitempty" json:"projectId"`
 	ProjectProfile   ProjectProfile     `bson:"projectProfile" json:"projectProfile"`
 	ProjectStartDate *time.Time         `bson:"projectStartDate" json:"projectStartDate"`
 	ProjectEndDate   *time.Time         `bson:"projectEndDate" json:"projectEndDate"`
